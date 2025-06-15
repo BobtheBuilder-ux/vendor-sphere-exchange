@@ -23,6 +23,7 @@ import HomeGardenPage from "./pages/HomeGardenPage";
 import ServicesPage from "./pages/ServicesPage";
 import AutomotivePage from "./pages/AutomotivePage";
 import AllVendorsPage from "./pages/AllVendorsPage";
+import VendorDetailsPage from "./pages/VendorDetailsPage";
 import ProductDetailsPage from "./pages/ProductDetailsPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import CustomerDashboard from "./pages/CustomerDashboard";
@@ -86,6 +87,7 @@ const App = () => {
                     <Route path="/categories/services" element={<ServicesPage />} />
                     <Route path="/categories/automotive" element={<AutomotivePage />} />
                     <Route path="/vendors" element={<AllVendorsPage />} />
+                    <Route path="/vendors/:vendorSlug" element={<VendorDetailsPage />} />
                     <Route path="/products/:id" element={<ProductDetailsPage />} />
                     <Route 
                       path="/admin/dashboard" 
