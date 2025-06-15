@@ -1,6 +1,6 @@
 
 import { Link, useNavigate } from "react-router-dom";
-import { Store } from "lucide-react";
+import { Store, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,9 +9,9 @@ const LoginPage = () => {
   const { signInWithGoogle, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = async (userType: "buyer" | "vendor" | "admin" = "buyer") => {
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(userType);
       navigate("/");
     } catch (error) {
       // Error is handled by the auth hook with toast
@@ -44,7 +44,7 @@ const LoginPage = () => {
             </CardHeader>
             <CardContent>
               <Button 
-                onClick={handleGoogleSignIn} 
+                onClick={() => handleGoogleSignIn("buyer")} 
                 className="w-full" 
                 disabled={isLoading}
                 variant="outline"
@@ -74,6 +74,28 @@ const LoginPage = () => {
                   Register as Vendor
                 </Button>
               </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="border-orange-200 bg-orange-50">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Shield className="w-5 h-5 mr-2 text-orange-600" />
+                Admin Sign In
+              </CardTitle>
+              <CardDescription>
+                Administrative access to manage the platform
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={() => handleGoogleSignIn("admin")} 
+                className="w-full bg-orange-600 hover:bg-orange-700" 
+                disabled={isLoading}
+              >
+                <Shield className="w-5 h-5 mr-2" />
+                {isLoading ? "Signing in..." : "Sign in as Admin"}
+              </Button>
             </CardContent>
           </Card>
         </div>
