@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { AuthProvider } from "@/hooks/useAuth";
+import { SearchProvider } from "@/contexts/SearchContext";
 import Index from "./pages/Index";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -22,6 +23,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import SearchPage from "./pages/SearchPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,32 +46,35 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <PayPalScriptProvider options={paypalOptions}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/vendor/dashboard" element={<VendorDashboard />} />
-              <Route path="/messages" element={<MessagesPage />} />
-              <Route path="/categories/electronics" element={<ElectronicsPage />} />
-              <Route path="/categories/fashion" element={<FashionPage />} />
-              <Route path="/categories/home-garden" element={<HomeGardenPage />} />
-              <Route path="/categories/services" element={<ServicesPage />} />
-              <Route path="/categories/automotive" element={<AutomotivePage />} />
-              <Route path="/vendors" element={<AllVendorsPage />} />
-              <Route path="/products/:id" element={<ProductDetailsPage />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/customer/dashboard" element={<CustomerDashboard />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <SearchProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/vendor/dashboard" element={<VendorDashboard />} />
+                <Route path="/messages" element={<MessagesPage />} />
+                <Route path="/categories/electronics" element={<ElectronicsPage />} />
+                <Route path="/categories/fashion" element={<FashionPage />} />
+                <Route path="/categories/home-garden" element={<HomeGardenPage />} />
+                <Route path="/categories/services" element={<ServicesPage />} />
+                <Route path="/categories/automotive" element={<AutomotivePage />} />
+                <Route path="/vendors" element={<AllVendorsPage />} />
+                <Route path="/products/:id" element={<ProductDetailsPage />} />
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/search" element={<SearchPage />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </SearchProvider>
       </AuthProvider>
     </PayPalScriptProvider>
   </QueryClientProvider>
