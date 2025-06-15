@@ -7,17 +7,6 @@ export const seedFirebaseWithBatch = async () => {
   console.log("Starting Firebase batch seeding...");
   
   try {
-    // Check if user is authenticated
-    const { user } = await import("@/hooks/useAuth").then(module => module.useAuth());
-    
-    if (!user) {
-      throw new Error("User must be authenticated to seed data");
-    }
-    
-    if (user.userType !== "admin") {
-      throw new Error("Only admin users can seed data");
-    }
-    
     const batch = writeBatch(db);
     let operationCount = 0;
     
