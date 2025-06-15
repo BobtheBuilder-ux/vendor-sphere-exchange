@@ -13,7 +13,7 @@ import FeaturedProducts from "@/components/FeaturedProducts";
 import FeaturedServices from "@/components/FeaturedServices";
 import TrustIndicators from "@/components/TrustIndicators";
 import PullToRefresh from "@/components/PullToRefresh";
-import SeedDataButton from "@/components/SeedDataButton";
+import MockDataButton from "@/components/MockDataButton";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -40,7 +40,7 @@ const Index = () => {
         
         {/* Demo Data Section - Visible to all users */}
         <div className="container mx-auto px-4 py-8">
-          <SeedDataButton />
+          <MockDataButton />
         </div>
         
         <FeaturedCategories />
