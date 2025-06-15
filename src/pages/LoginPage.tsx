@@ -1,31 +1,30 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/hooks/useAuth";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    // TODO: Implement actual authentication logic
-    console.log("Login attempt:", { email, password });
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      // Redirect to dashboard or home page
-    }, 1000);
+    try {
+      await login(email, password);
+      navigate("/");
+    } catch (error) {
+      // Error is handled by the auth hook with toast
+    }
   };
 
   return (
@@ -107,18 +106,6 @@ const LoginPage = () => {
                 {isLoading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
-
-            <div className="mt-6">
-              <Separator />
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <Button variant="outline" className="w-full">
-                  Continue as Buyer
-                </Button>
-                <Button variant="outline" className="w-full">
-                  Continue as Vendor
-                </Button>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>

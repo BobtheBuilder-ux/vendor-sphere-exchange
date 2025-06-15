@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useAuth } from "@/hooks/useAuth";
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -21,7 +22,8 @@ const RegisterPage = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { register, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,16 +38,12 @@ const RegisterPage = () => {
       return;
     }
 
-    setIsLoading(true);
-    
-    // TODO: Implement actual registration logic
-    console.log("Registration attempt:", formData);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      // Redirect to dashboard or verification page
-    }, 1000);
+    try {
+      await register(formData);
+      navigate("/");
+    } catch (error) {
+      // Error is handled by the auth hook with toast
+    }
   };
 
   const updateFormData = (field: string, value: string | boolean) => {
