@@ -21,6 +21,7 @@ const SeedDataButton = () => {
       return;
     }
 
+    console.log("Starting seed process for user:", user.id);
     setIsSeeding(true);
     
     try {
@@ -30,11 +31,17 @@ const SeedDataButton = () => {
         title: "Success!",
         description: "Database has been seeded with 100+ products, vendors, categories, and sample orders",
       });
+      
+      console.log("Seeding completed successfully");
     } catch (error) {
       console.error("Seeding failed:", error);
+      
+      // More specific error message
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      
       toast({
         title: "Error",
-        description: "Failed to seed database. Please try again.",
+        description: `Failed to seed database: ${errorMessage}. Please try again.`,
         variant: "destructive",
       });
     } finally {
