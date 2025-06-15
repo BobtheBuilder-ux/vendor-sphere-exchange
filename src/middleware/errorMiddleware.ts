@@ -23,7 +23,16 @@ export const logError = (error: Error, errorInfo?: ErrorInfo) => {
     if (errorInfo?.component) {
       scope.setTag("component", errorInfo.component);
     }
-    scope.setContext("errorInfo", errorInfo);
+    if (errorInfo) {
+      // Convert ErrorInfo to a proper context object
+      const context: Record<string, any> = {
+        message: errorInfo.message,
+        ...(errorInfo.stack && { stack: errorInfo.stack }),
+        ...(errorInfo.component && { component: errorInfo.component }),
+        ...(errorInfo.userId && { userId: errorInfo.userId }),
+      };
+      scope.setContext("errorInfo", context);
+    }
     Sentry.captureException(error);
   });
 };

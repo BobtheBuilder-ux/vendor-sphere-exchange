@@ -1,4 +1,3 @@
-
 export interface Product {
   id: string;
   name: string;
@@ -14,6 +13,20 @@ export interface Product {
   totalReviews?: number;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  userType: "buyer" | "vendor" | "admin";
+  avatar?: string;
+  businessName?: string;
+  businessDescription?: string;
+  contactPhone?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Review {

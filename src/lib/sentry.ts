@@ -1,6 +1,5 @@
 
 import * as Sentry from "@sentry/react";
-import { BrowserTracing } from "@sentry/tracing";
 import { useEffect } from "react";
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from "react-router-dom";
 
@@ -9,8 +8,8 @@ export const initSentry = () => {
     dsn: import.meta.env.VITE_SENTRY_DSN || "", // You'll need to set this in your environment
     environment: import.meta.env.MODE,
     integrations: [
-      new BrowserTracing({
-        routingInstrumentation: Sentry.reactRouterV6Instrumentation(
+      Sentry.browserTracingIntegration({
+        routingInstrumentation: Sentry.reactRouterV6BrowserTracingIntegration(
           useEffect,
           useLocation,
           useNavigationType,
