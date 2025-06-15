@@ -11,9 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Link, useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import PayPalButton from "@/components/PayPalButton";
+import TouchOptimized from "@/components/TouchOptimized";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { createOrder } from "@/lib/firestore";
 
 const CheckoutPage = () => {
@@ -24,6 +26,7 @@ const CheckoutPage = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { cartItems, getCartTotal, getCartItemCount, clearCart } = useCart();
+  const isMobile = useIsMobile();
 
   // Redirect if not logged in
   useEffect(() => {
@@ -221,44 +224,70 @@ const CheckoutPage = () => {
       <Navigation />
       
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Link to="/cart" className="inline-flex items-center text-sm text-gray-600 hover:text-primary">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to Cart
-          </Link>
-        </div>
+        <TouchOptimized onTap={() => navigate("/cart")}>
+          <div className="mb-6">
+            <div className="inline-flex items-center text-sm text-gray-600 hover:text-primary cursor-pointer">
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back to Cart
+            </div>
+          </div>
+        </TouchOptimized>
         
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
+        <h1 className={`text-3xl font-bold text-gray-900 mb-8 ${isMobile ? 'text-2xl' : ''}`}>
           Checkout ({getCartItemCount()} items)
         </h1>
         
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className={`grid grid-cols-1 ${isMobile ? 'gap-6' : 'lg:grid-cols-2 gap-8'}`}>
             {/* Checkout Form */}
             <div className="space-y-6">
               {/* Contact Information */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Contact Information</CardTitle>
+                  <CardTitle className={isMobile ? 'text-lg' : ''}>Contact Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className={`grid grid-cols-1 ${isMobile ? 'gap-4' : 'sm:grid-cols-2 gap-4'}`}>
                     <div>
                       <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" name="firstName" defaultValue={user.firstName} required />
+                      <Input 
+                        id="firstName" 
+                        name="firstName" 
+                        defaultValue={user?.firstName || ''} 
+                        required 
+                        className={isMobile ? 'h-12 text-base' : ''}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" name="lastName" defaultValue={user.lastName} required />
+                      <Input 
+                        id="lastName" 
+                        name="lastName" 
+                        defaultValue={user?.lastName || ''} 
+                        required 
+                        className={isMobile ? 'h-12 text-base' : ''}
+                      />
                     </div>
                   </div>
                   <div>
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" name="email" type="email" defaultValue={user.email} required />
+                    <Input 
+                      id="email" 
+                      name="email" 
+                      type="email" 
+                      defaultValue={user?.email || ''} 
+                      required 
+                      className={isMobile ? 'h-12 text-base' : ''}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" name="phone" type="tel" />
+                    <Input 
+                      id="phone" 
+                      name="phone" 
+                      type="tel" 
+                      className={isMobile ? 'h-12 text-base' : ''}
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -266,26 +295,40 @@ const CheckoutPage = () => {
               {/* Shipping Address */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Shipping Address</CardTitle>
+                  <CardTitle className={isMobile ? 'text-lg' : ''}>Shipping Address</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <Label htmlFor="address">Address</Label>
-                    <Input id="address" name="address" required />
+                    <Input 
+                      id="address" 
+                      name="address" 
+                      required 
+                      className={isMobile ? 'h-12 text-base' : ''}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="apartment">Apartment, suite, etc. (optional)</Label>
-                    <Input id="apartment" name="apartment" />
+                    <Input 
+                      id="apartment" 
+                      name="apartment" 
+                      className={isMobile ? 'h-12 text-base' : ''}
+                    />
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className={`grid grid-cols-1 ${isMobile ? 'gap-4' : 'sm:grid-cols-3 gap-4'}`}>
                     <div>
                       <Label htmlFor="city">City</Label>
-                      <Input id="city" name="city" required />
+                      <Input 
+                        id="city" 
+                        name="city" 
+                        required 
+                        className={isMobile ? 'h-12 text-base' : ''}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="state">State</Label>
                       <Select name="state">
-                        <SelectTrigger>
+                        <SelectTrigger className={isMobile ? 'h-12 text-base' : ''}>
                           <SelectValue placeholder="Select state" />
                         </SelectTrigger>
                         <SelectContent>
@@ -297,7 +340,12 @@ const CheckoutPage = () => {
                     </div>
                     <div>
                       <Label htmlFor="zip">ZIP Code</Label>
-                      <Input id="zip" name="zip" required />
+                      <Input 
+                        id="zip" 
+                        name="zip" 
+                        required 
+                        className={isMobile ? 'h-12 text-base' : ''}
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -306,40 +354,46 @@ const CheckoutPage = () => {
               {/* Shipping Method */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Shipping Method</CardTitle>
+                  <CardTitle className={isMobile ? 'text-lg' : ''}>Shipping Method</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <RadioGroup value={shippingMethod} onValueChange={setShippingMethod}>
-                    <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                      <RadioGroupItem value="standard" id="standard" />
-                      <div className="flex-1 flex justify-between">
-                        <div>
-                          <Label htmlFor="standard" className="font-medium">Standard Shipping</Label>
-                          <p className="text-sm text-gray-600">5-7 business days</p>
+                    <TouchOptimized>
+                      <div className={`flex items-center space-x-2 p-3 border rounded-lg ${isMobile ? 'p-4' : ''}`}>
+                        <RadioGroupItem value="standard" id="standard" />
+                        <div className="flex-1 flex justify-between">
+                          <div>
+                            <Label htmlFor="standard" className="font-medium">Standard Shipping</Label>
+                            <p className="text-sm text-gray-600">5-7 business days</p>
+                          </div>
+                          <span className="font-medium">Free</span>
                         </div>
-                        <span className="font-medium">Free</span>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                      <RadioGroupItem value="express" id="express" />
-                      <div className="flex-1 flex justify-between">
-                        <div>
-                          <Label htmlFor="express" className="font-medium">Express Shipping</Label>
-                          <p className="text-sm text-gray-600">2-3 business days</p>
+                    </TouchOptimized>
+                    <TouchOptimized>
+                      <div className={`flex items-center space-x-2 p-3 border rounded-lg ${isMobile ? 'p-4' : ''}`}>
+                        <RadioGroupItem value="express" id="express" />
+                        <div className="flex-1 flex justify-between">
+                          <div>
+                            <Label htmlFor="express" className="font-medium">Express Shipping</Label>
+                            <p className="text-sm text-gray-600">2-3 business days</p>
+                          </div>
+                          <span className="font-medium">$15.99</span>
                         </div>
-                        <span className="font-medium">$15.99</span>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                      <RadioGroupItem value="overnight" id="overnight" />
-                      <div className="flex-1 flex justify-between">
-                        <div>
-                          <Label htmlFor="overnight" className="font-medium">Overnight Shipping</Label>
-                          <p className="text-sm text-gray-600">Next business day</p>
+                    </TouchOptimized>
+                    <TouchOptimized>
+                      <div className={`flex items-center space-x-2 p-3 border rounded-lg ${isMobile ? 'p-4' : ''}`}>
+                        <RadioGroupItem value="overnight" id="overnight" />
+                        <div className="flex-1 flex justify-between">
+                          <div>
+                            <Label htmlFor="overnight" className="font-medium">Overnight Shipping</Label>
+                            <p className="text-sm text-gray-600">Next business day</p>
+                          </div>
+                          <span className="font-medium">$25.99</span>
                         </div>
-                        <span className="font-medium">$25.99</span>
                       </div>
-                    </div>
+                    </TouchOptimized>
                   </RadioGroup>
                 </CardContent>
               </Card>
@@ -347,42 +401,64 @@ const CheckoutPage = () => {
               {/* Payment Method */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Payment Method</CardTitle>
+                  <CardTitle className={isMobile ? 'text-lg' : ''}>Payment Method</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="card" id="card" />
-                      <Label htmlFor="card" className="flex items-center">
-                        <CreditCard className="h-4 w-4 mr-2" />
-                        Credit Card
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="paypal" id="paypal" />
-                      <Label htmlFor="paypal" className="flex items-center">
-                        <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M20.067 8.478c.492-3.164-.786-5.321-3.212-6.464C15.763 1.385 14.72 1 13.44 1H5.607a.75.75 0 0 0-.741.633L2.334 19.59a.45.45 0 0 0 .444.527h3.538l.891-5.64-.028.177a.75.75 0 0 1 .741-.633h1.541c3.033 0 5.406-1.228 6.097-4.781.027-.14.053-.281.074-.423.218-1.465-.001-2.462-.56-3.339" />
-                        </svg>
-                        PayPal
-                      </Label>
-                    </div>
+                    <TouchOptimized>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="card" id="card" />
+                        <Label htmlFor="card" className="flex items-center">
+                          <CreditCard className="h-4 w-4 mr-2" />
+                          Credit Card
+                        </Label>
+                      </div>
+                    </TouchOptimized>
+                    <TouchOptimized>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="paypal" id="paypal" />
+                        <Label htmlFor="paypal" className="flex items-center">
+                          <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20.067 8.478c.492-3.164-.786-5.321-3.212-6.464C15.763 1.385 14.72 1 13.44 1H5.607a.75.75 0 0 0-.741.633L2.334 19.59a.45.45 0 0 0 .444.527h3.538l.891-5.64-.028.177a.75.75 0 0 1 .741-.633h1.541c3.033 0 5.406-1.228 6.097-4.781.027-.14.053-.281.074-.423.218-1.465-.001-2.462-.56-3.339" />
+                          </svg>
+                          PayPal
+                        </Label>
+                      </div>
+                    </TouchOptimized>
                   </RadioGroup>
                   
                   {paymentMethod === "card" && (
                     <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
                       <div>
                         <Label htmlFor="cardNumber">Card Number</Label>
-                        <Input id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" required />
+                        <Input 
+                          id="cardNumber" 
+                          name="cardNumber" 
+                          placeholder="1234 5678 9012 3456" 
+                          required 
+                          className={isMobile ? 'h-12 text-base' : ''}
+                        />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className={`grid grid-cols-2 gap-4`}>
                         <div>
                           <Label htmlFor="expiry">Expiry Date</Label>
-                          <Input id="expiry" name="expiry" placeholder="MM/YY" required />
+                          <Input 
+                            id="expiry" 
+                            name="expiry" 
+                            placeholder="MM/YY" 
+                            required 
+                            className={isMobile ? 'h-12 text-base' : ''}
+                          />
                         </div>
                         <div>
                           <Label htmlFor="cvv">CVV</Label>
-                          <Input id="cvv" name="cvv" placeholder="123" required />
+                          <Input 
+                            id="cvv" 
+                            name="cvv" 
+                            placeholder="123" 
+                            required 
+                            className={isMobile ? 'h-12 text-base' : ''}
+                          />
                         </div>
                       </div>
                     </div>
@@ -409,15 +485,15 @@ const CheckoutPage = () => {
             </div>
 
             {/* Order Summary */}
-            <div className="space-y-6">
+            <div className={`space-y-6 ${isMobile ? 'order-first' : ''}`}>
               <Card>
                 <CardHeader>
-                  <CardTitle>Order Summary</CardTitle>
+                  <CardTitle className={isMobile ? 'text-lg' : ''}>Order Summary</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {cartItems.map((item) => (
                     <div key={item.id} className="flex items-center space-x-4">
-                      <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                      <div className={`bg-gray-100 rounded-lg overflow-hidden ${isMobile ? 'w-20 h-20' : 'w-16 h-16'}`}>
                         <img 
                           src={item.product?.imageUrl || item.product?.images?.[0] || "/placeholder.svg"} 
                           alt={item.product?.name || "Product"}
@@ -425,13 +501,19 @@ const CheckoutPage = () => {
                         />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-sm">{item.product?.name || "Product"}</h4>
-                        <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
+                        <h4 className={`font-medium ${isMobile ? 'text-base' : 'text-sm'}`}>
+                          {item.product?.name || "Product"}
+                        </h4>
+                        <p className={`text-gray-600 ${isMobile ? 'text-sm' : 'text-xs'}`}>
+                          Qty: {item.quantity}
+                        </p>
                         {item.product && item.product.stock < item.quantity && (
-                          <p className="text-xs text-red-600">Insufficient stock!</p>
+                          <p className={`text-red-600 ${isMobile ? 'text-sm' : 'text-xs'}`}>
+                            Insufficient stock!
+                          </p>
                         )}
                       </div>
-                      <span className="font-medium">
+                      <span className={`font-medium ${isMobile ? 'text-base' : ''}`}>
                         ${((item.product?.price || 0) * item.quantity).toFixed(2)}
                       </span>
                     </div>
@@ -453,7 +535,7 @@ const CheckoutPage = () => {
                       <span>${tax.toFixed(2)}</span>
                     </div>
                     <Separator />
-                    <div className="flex justify-between font-semibold text-lg">
+                    <div className={`flex justify-between font-semibold ${isMobile ? 'text-lg' : 'text-lg'}`}>
                       <span>Total</span>
                       <span>${total.toFixed(2)}</span>
                     </div>
@@ -479,7 +561,7 @@ const CheckoutPage = () => {
               {paymentMethod === "card" && (
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className={`w-full ${isMobile ? 'h-12 text-base' : ''}`}
                   size="lg"
                   disabled={isProcessing}
                 >

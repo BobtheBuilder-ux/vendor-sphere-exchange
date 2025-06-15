@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { Search, Store, MessageSquare, ShoppingCart, Star, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,16 +12,32 @@ import FeaturedCategories from "@/components/FeaturedCategories";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import FeaturedServices from "@/components/FeaturedServices";
 import TrustIndicators from "@/components/TrustIndicators";
+import PullToRefresh from "@/components/PullToRefresh";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
+  const { toast } = useToast();
+
+  const handleRefresh = useCallback(async () => {
+    // Simulate refresh delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    toast({
+      title: "Refreshed",
+      description: "Content has been updated",
+    });
+  }, [toast]);
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <HeroSection />
-      <FeaturedCategories />
-      <FeaturedProducts />
-      <FeaturedServices />
-      <TrustIndicators />
+      <PullToRefresh onRefresh={handleRefresh}>
+        <HeroSection />
+        <FeaturedCategories />
+        <FeaturedProducts />
+        <FeaturedServices />
+        <TrustIndicators />
+      </PullToRefresh>
     </div>
   );
 };

@@ -1,13 +1,14 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ShoppingCart, MessageSquare, User, Menu, Store, LogOut, Filter } from "lucide-react";
+import { Search, ShoppingCart, MessageSquare, User, Store, LogOut, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useSearch } from "@/contexts/SearchContext";
 import { getSearchSuggestions } from "@/lib/search";
+import { useIsMobile } from "@/hooks/use-mobile";
+import MobileMenu from "@/components/MobileMenu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +27,7 @@ const Navigation = () => {
   const { updateFilters } = useSearch();
   const navigate = useNavigate();
   const searchRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -79,14 +81,19 @@ const Navigation = () => {
     <nav className="sticky top-0 z-50 bg-white border-b shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
+          {/* Mobile Menu */}
+          <MobileMenu cartItems={cartItems} unreadMessages={unreadMessages} />
+
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <Store className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-primary">VendorSphere</span>
+            <span className={`text-xl font-bold text-primary ${isMobile ? 'hidden sm:block' : ''}`}>
+              VendorSphere
+            </span>
           </Link>
 
-          {/* Enhanced Search Bar */}
-          <div className="flex-1 max-w-2xl mx-8" ref={searchRef}>
+          {/* Enhanced Search Bar - Hidden on mobile */}
+          <div className={`flex-1 max-w-2xl mx-8 ${isMobile ? 'hidden' : ''}`} ref={searchRef}>
             <form onSubmit={handleSearch} className="relative">
               <Input
                 type="text"
@@ -131,8 +138,20 @@ const Navigation = () => {
             </form>
           </div>
 
-          {/* Navigation Items */}
-          <div className="flex items-center space-x-4">
+          {/* Mobile Search Button */}
+          {isMobile && (
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => navigate('/search')}
+              className="sm:hidden"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+          )}
+
+          {/* Navigation Items - Hidden on mobile */}
+          <div className={`flex items-center space-x-4 ${isMobile ? 'hidden' : ''}`}>
             {/* Messages */}
             <Link to="/messages" className="relative">
               <Button variant="ghost" size="icon">
@@ -207,31 +226,59 @@ const Navigation = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+
+          {/* Mobile Cart & Messages Icons */}
+          {isMobile && (
+            <div className="flex items-center space-x-2 sm:hidden">
+              <Link to="/messages" className="relative">
+                <Button variant="ghost" size="icon">
+                  <MessageSquare className="h-5 w-5" />
+                  {unreadMessages > 0 && (
+                    <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full text-xs">
+                      {unreadMessages}
+                    </Badge>
+                  )}
+                </Button>
+              </Link>
+              <Link to="/cart" className="relative">
+                <Button variant="ghost" size="icon">
+                  <ShoppingCart className="h-5 w-5" />
+                  {cartItems > 0 && (
+                    <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full text-xs">
+                      {cartItems}
+                    </Badge>
+                  )}
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
 
-        {/* Category Navigation */}
-        <div className="border-t py-2">
-          <div className="flex items-center space-x-6 text-sm">
-            <Link to="/categories/electronics" className="hover:text-primary transition-colors">
-              Electronics
-            </Link>
-            <Link to="/categories/fashion" className="hover:text-primary transition-colors">
-              Fashion
-            </Link>
-            <Link to="/categories/home" className="hover:text-primary transition-colors">
-              Home & Garden
-            </Link>
-            <Link to="/categories/services" className="hover:text-primary transition-colors">
-              Services
-            </Link>
-            <Link to="/categories/automotive" className="hover:text-primary transition-colors">
-              Automotive
-            </Link>
-            <Link to="/vendors" className="hover:text-primary transition-colors">
-              All Vendors
-            </Link>
+        {/* Category Navigation - Hidden on mobile */}
+        {!isMobile && (
+          <div className="border-t py-2">
+            <div className="flex items-center space-x-6 text-sm">
+              <Link to="/categories/electronics" className="hover:text-primary transition-colors">
+                Electronics
+              </Link>
+              <Link to="/categories/fashion" className="hover:text-primary transition-colors">
+                Fashion
+              </Link>
+              <Link to="/categories/home" className="hover:text-primary transition-colors">
+                Home & Garden
+              </Link>
+              <Link to="/categories/services" className="hover:text-primary transition-colors">
+                Services
+              </Link>
+              <Link to="/categories/automotive" className="hover:text-primary transition-colors">
+                Automotive
+              </Link>
+              <Link to="/vendors" className="hover:text-primary transition-colors">
+                All Vendors
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </nav>
   );
