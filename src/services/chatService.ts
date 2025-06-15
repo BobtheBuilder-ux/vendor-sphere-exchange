@@ -7,6 +7,11 @@ export { messagesService } from "@/services/firebase/messages";
 export { conversationsService } from "@/services/firebase/conversations";
 export { userStatusService } from "@/services/firebase/userStatus";
 
+// Import services for the main chatService
+import { messagesService } from "@/services/firebase/messages";
+import { conversationsService } from "@/services/firebase/conversations";
+import { userStatusService } from "@/services/firebase/userStatus";
+
 // Main chat service that combines all functionality
 export const chatService = {
   // Messages
