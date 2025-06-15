@@ -41,19 +41,21 @@ export const useCart = () => {
       // Fetch product details for each cart item
       const itemsWithProducts = await Promise.all(
         items.map(async (item) => {
-          const product = await getProduct(item.productId);
-          return { ...item, product };
+          try {
+            const product = await getProduct(item.productId);
+            return { ...item, product };
+          } catch (error) {
+            console.warn("Failed to load product for cart item:", item.productId);
+            return { ...item, product: undefined };
+          }
         })
       );
       
       setCartItems(itemsWithProducts);
     } catch (error) {
       console.error("Error loading cart:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load cart items",
-        variant: "destructive",
-      });
+      // Don't show toast error for cart loading - it's not critical
+      setCartItems([]);
     } finally {
       setIsLoading(false);
     }

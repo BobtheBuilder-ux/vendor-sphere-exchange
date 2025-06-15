@@ -1,4 +1,5 @@
-import { collection, writeBatch, doc, serverTimestamp, getDoc } from "firebase/firestore";
+
+import { collection, writeBatch, doc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Product, Vendor, Category, Order } from "@/types/firestore";
 
@@ -64,39 +65,18 @@ const descriptions = [
   "Professional-grade quality at an affordable price."
 ];
 
-export const seedDatabase = async (userId: string) => {
-  console.log("Starting database seeding for user:", userId);
-  
-  if (!userId) {
-    throw new Error("User ID is required for seeding");
-  }
+export const seedDatabase = async (userId?: string) => {
+  console.log("Starting database seeding (no auth required)");
   
   try {
-    // Check if user exists and has permissions
-    console.log("Checking user permissions...");
-    const userDoc = await getDoc(doc(db, "users", userId));
-    if (!userDoc.exists()) {
-      throw new Error("User not found. Please make sure you're logged in.");
-    }
+    // Create categories (no auth required)
+    console.log("Creating categories...");
+    const categoryIds = await createCategories();
+    console.log(`Created ${categoryIds.length} categories`);
     
-    const userData = userDoc.data();
-    console.log("User data:", userData);
-    
-    // For now, skip categories creation if user is not admin
-    let categoryIds: string[] = [];
-    if (userData.userType === 'admin') {
-      console.log("Admin user detected, creating categories...");
-      categoryIds = await createCategories();
-      console.log(`Created ${categoryIds.length} categories`);
-    } else {
-      console.log("Non-admin user, using default category IDs...");
-      // Use placeholder category IDs for non-admin users
-      categoryIds = categories.map((_, index) => `category_${index}`);
-    }
-    
-    // Create vendors
+    // Create vendors (no auth required)
     console.log("Creating vendors...");
-    const vendorIds = await createVendors(userId);
+    const vendorIds = await createVendors(userId || "demo_user");
     console.log(`Created ${vendorIds.length} vendors`);
     
     // Create products
@@ -104,20 +84,18 @@ export const seedDatabase = async (userId: string) => {
     const productCount = await createProducts(categoryIds, vendorIds);
     console.log(`Created ${productCount} products`);
     
-    // Create sample orders
-    console.log("Creating orders...");
-    const orderCount = await createOrders(userId, vendorIds);
-    console.log(`Created ${orderCount} orders`);
+    // Create sample orders (if userId provided)
+    if (userId) {
+      console.log("Creating orders...");
+      const orderCount = await createOrders(userId, vendorIds);
+      console.log(`Created ${orderCount} orders`);
+    }
     
     console.log("Database seeding completed successfully!");
     return true;
   } catch (error) {
     console.error("Error seeding database:", error);
     if (error instanceof Error) {
-      // Check for permission errors specifically
-      if (error.message.includes("permission") || error.message.includes("insufficient")) {
-        throw new Error(`Permission denied: You need to be signed in and have proper permissions to seed the database. ${error.message}`);
-      }
       throw new Error(`Database seeding failed: ${error.message}`);
     }
     throw new Error("Database seeding failed with unknown error");
@@ -172,14 +150,14 @@ const createVendors = async (userId: string): Promise<string[]> => {
       vendorIds.push(docRef.id);
       
       const vendorData = {
-        userId: index === 0 ? userId : `vendor_${index}`, // First vendor belongs to current user
+        userId: index === 0 ? userId : `vendor_${index}`,
         businessName: name,
         description: `${name} - Your trusted partner for quality products and excellent service.`,
         contactEmail: `contact@${name.toLowerCase().replace(/\s+/g, '')}.com`,
         contactPhone: `+1-555-${String(index).padStart(3, '0')}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
         isActive: true,
         isVerified: true,
-        rating: 4.0 + Math.random() * 1.0, // Random rating between 4.0 and 5.0
+        rating: 4.0 + Math.random() * 1.0,
         totalReviews: Math.floor(Math.random() * 500) + 50,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
@@ -214,15 +192,15 @@ const createProducts = async (categoryIds: string[], vendorIds: string[]): Promi
       
       const product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'> = {
         name: productNames[i % productNames.length] + (i >= productNames.length ? ` ${Math.floor(i / productNames.length) + 1}` : ''),
-        price: Math.floor(Math.random() * 200) + 10, // Random price between $10 and $210
+        price: Math.floor(Math.random() * 200) + 10,
         description: descriptions[Math.floor(Math.random() * descriptions.length)],
         images: ["/placeholder.svg"],
         imageUrl: "/placeholder.svg",
         vendorId: vendorIds[Math.floor(Math.random() * vendorIds.length)],
         categoryId: categoryIds[Math.floor(Math.random() * categoryIds.length)],
-        stock: Math.floor(Math.random() * 100) + 1, // Random stock between 1 and 100
+        stock: Math.floor(Math.random() * 100) + 1,
         isActive: true,
-        rating: 3.5 + Math.random() * 1.5, // Random rating between 3.5 and 5.0
+        rating: 3.5 + Math.random() * 1.5,
         totalReviews: Math.floor(Math.random() * 200) + 5
       };
       
@@ -235,7 +213,6 @@ const createProducts = async (categoryIds: string[], vendorIds: string[]): Promi
       operationCount++;
       productCount++;
       
-      // Firestore has a limit of 500 operations per batch
       if (operationCount === 450) {
         batches.push(currentBatch);
         currentBatch = writeBatch(db);
@@ -243,12 +220,10 @@ const createProducts = async (categoryIds: string[], vendorIds: string[]): Promi
       }
     }
     
-    // Add the last batch if it has operations
     if (operationCount > 0) {
       batches.push(currentBatch);
     }
     
-    // Commit all batches
     for (const batch of batches) {
       await batch.commit();
     }
@@ -265,11 +240,10 @@ const createOrders = async (userId: string, vendorIds: string[]): Promise<number
     const batch = writeBatch(db);
     let orderCount = 0;
     
-    // Create 20 sample orders
     for (let i = 0; i < 20; i++) {
       const docRef = doc(collection(db, "orders"));
       
-      const itemCount = Math.floor(Math.random() * 3) + 1; // 1-3 items per order
+      const itemCount = Math.floor(Math.random() * 3) + 1;
       const items = [];
       let subtotal = 0;
       

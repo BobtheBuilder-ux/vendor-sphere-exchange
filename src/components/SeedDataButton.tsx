@@ -12,31 +12,22 @@ const SeedDataButton = () => {
   const { toast } = useToast();
 
   const handleSeedData = async () => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to seed the database",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    console.log("Starting seed process for user:", user.id);
+    console.log("Starting seed process (no auth required)");
     setIsSeeding(true);
     
     try {
-      await seedDatabase(user.id);
+      // Pass user ID if available, otherwise seed will work without it
+      await seedDatabase(user?.id);
       
       toast({
         title: "Success!",
-        description: "Database has been seeded with 100+ products, vendors, categories, and sample orders",
+        description: "Database has been seeded with 100+ products, vendors, categories, and sample data",
       });
       
       console.log("Seeding completed successfully");
     } catch (error) {
       console.error("Seeding failed:", error);
       
-      // More specific error message
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       
       toast({
