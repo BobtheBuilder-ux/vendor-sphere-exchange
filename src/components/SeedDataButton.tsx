@@ -2,37 +2,42 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Database, Loader2 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { seedDatabase } from "@/lib/seedData";
+import { simpleSeedDatabase } from "@/lib/seedData/simpleSeed";
 
 const SeedDataButton = () => {
   const [isSeeding, setIsSeeding] = useState(false);
-  const { user } = useAuth();
   const { toast } = useToast();
 
   const handleSeedData = async () => {
-    console.log("Starting seed process (no auth required)");
+    console.log("Starting simple seed process");
     setIsSeeding(true);
     
     try {
-      // Pass user ID if available, otherwise seed will work without it
-      await seedDatabase(user?.id);
+      const result = await simpleSeedDatabase();
       
-      toast({
-        title: "Success!",
-        description: "Database has been seeded with 100+ products, vendors, categories, and sample data",
-      });
+      if (result.success) {
+        toast({
+          title: "Success!",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
       
-      console.log("Seeding completed successfully");
+      console.log("Simple seeding completed");
     } catch (error) {
-      console.error("Seeding failed:", error);
+      console.error("Simple seeding failed:", error);
       
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       
       toast({
         title: "Error",
-        description: `Failed to seed database: ${errorMessage}. Please try again.`,
+        description: `Failed to seed database: ${errorMessage}`,
         variant: "destructive",
       });
     } finally {
@@ -48,7 +53,7 @@ const SeedDataButton = () => {
             Demo Platform
           </h3>
           <p className="text-sm text-gray-600 mb-4">
-            Generate sample data to explore our ecommerce platform with 100+ products, vendors, and orders
+            Generate sample data to explore our ecommerce platform with products, vendors, and categories
           </p>
           <Button
             onClick={handleSeedData}
@@ -61,14 +66,14 @@ const SeedDataButton = () => {
             ) : (
               <Database className="h-4 w-4" />
             )}
-            {isSeeding ? "Loading Sample Data..." : "Load Demo Data"}
+            {isSeeding ? "Loading Demo Data..." : "Load Demo Data"}
           </Button>
         </div>
         <div className="hidden md:block">
           <div className="text-right text-sm text-gray-500">
-            <div>✨ 100+ Products</div>
-            <div>🏪 25+ Vendors</div>
-            <div>📦 Sample Orders</div>
+            <div>✨ 50+ Products</div>
+            <div>🏪 5+ Vendors</div>
+            <div>📦 5 Categories</div>
           </div>
         </div>
       </div>
