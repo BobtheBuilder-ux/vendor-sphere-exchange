@@ -1,4 +1,4 @@
-import { collection, writeBatch, doc, serverTimestamp } from "firebase/firestore";
+import { collection, writeBatch, doc, serverTimestamp, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Product, Vendor, Category, Order } from "@/types/firestore";
 
@@ -72,10 +72,27 @@ export const seedDatabase = async (userId: string) => {
   }
   
   try {
-    // Create categories first
-    console.log("Creating categories...");
-    const categoryIds = await createCategories();
-    console.log(`Created ${categoryIds.length} categories`);
+    // Check if user exists and has permissions
+    console.log("Checking user permissions...");
+    const userDoc = await getDoc(doc(db, "users", userId));
+    if (!userDoc.exists()) {
+      throw new Error("User not found. Please make sure you're logged in.");
+    }
+    
+    const userData = userDoc.data();
+    console.log("User data:", userData);
+    
+    // For now, skip categories creation if user is not admin
+    let categoryIds: string[] = [];
+    if (userData.userType === 'admin') {
+      console.log("Admin user detected, creating categories...");
+      categoryIds = await createCategories();
+      console.log(`Created ${categoryIds.length} categories`);
+    } else {
+      console.log("Non-admin user, using default category IDs...");
+      // Use placeholder category IDs for non-admin users
+      categoryIds = categories.map((_, index) => `category_${index}`);
+    }
     
     // Create vendors
     console.log("Creating vendors...");
@@ -97,6 +114,10 @@ export const seedDatabase = async (userId: string) => {
   } catch (error) {
     console.error("Error seeding database:", error);
     if (error instanceof Error) {
+      // Check for permission errors specifically
+      if (error.message.includes("permission") || error.message.includes("insufficient")) {
+        throw new Error(`Permission denied: You need to be signed in and have proper permissions to seed the database. ${error.message}`);
+      }
       throw new Error(`Database seeding failed: ${error.message}`);
     }
     throw new Error("Database seeding failed with unknown error");
@@ -150,7 +171,7 @@ const createVendors = async (userId: string): Promise<string[]> => {
       const docRef = doc(collection(db, "vendors"));
       vendorIds.push(docRef.id);
       
-      batch.set(docRef, {
+      const vendorData = {
         userId: index === 0 ? userId : `vendor_${index}`, // First vendor belongs to current user
         businessName: name,
         description: `${name} - Your trusted partner for quality products and excellent service.`,
@@ -162,14 +183,21 @@ const createVendors = async (userId: string): Promise<string[]> => {
         totalReviews: Math.floor(Math.random() * 500) + 50,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
-      });
+      };
+      
+      batch.set(docRef, vendorData);
     });
     
+    console.log("Committing vendors batch...");
     await batch.commit();
+    console.log("Vendors batch committed successfully");
     return vendorIds;
   } catch (error) {
-    console.error("Error creating vendors:", error);
-    throw new Error("Failed to create vendors");
+    console.error("Detailed error creating vendors:", error);
+    if (error instanceof Error) {
+      throw new Error(`Failed to create vendors: ${error.message}`);
+    }
+    throw new Error("Failed to create vendors: Unknown error");
   }
 };
 
