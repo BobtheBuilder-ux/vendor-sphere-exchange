@@ -16,7 +16,9 @@ import {
   Plus,
   Eye,
   Edit,
-  Trash2
+  Trash2,
+  FileText,
+  BarChart3
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import VendorStats from "@/components/vendor/VendorStats";
@@ -24,6 +26,8 @@ import ProductManagement from "@/components/vendor/ProductManagement";
 import OrderManagement from "@/components/vendor/OrderManagement";
 import VendorProfile from "@/components/vendor/VendorProfile";
 import VendorAnalytics from "@/components/vendor/VendorAnalytics";
+import VendorOnboarding from "@/components/vendor/VendorOnboarding";
+import InventoryManagement from "@/components/vendor/InventoryManagement";
 
 const VendorDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -51,11 +55,13 @@ const VendorDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="inventory">Inventory</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="onboarding">Onboarding</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
 
@@ -136,12 +142,20 @@ const VendorDashboard = () => {
             <ProductManagement />
           </TabsContent>
 
+          <TabsContent value="inventory">
+            <InventoryManagement />
+          </TabsContent>
+
           <TabsContent value="orders">
             <OrderManagement />
           </TabsContent>
 
           <TabsContent value="analytics">
             <VendorAnalytics />
+          </TabsContent>
+
+          <TabsContent value="onboarding">
+            <VendorOnboarding />
           </TabsContent>
 
           <TabsContent value="profile">
