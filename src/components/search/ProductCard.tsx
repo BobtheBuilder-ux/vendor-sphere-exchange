@@ -7,6 +7,8 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RatingDisplay } from '@/components/ui/rating';
 import { Product } from '@/types/firestore';
+import { useCart } from '@/hooks/useCart';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ProductCardProps {
   product: Product;
@@ -15,9 +17,17 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, viewMode }: ProductCardProps) => {
   const [isFavorited, setIsFavorited] = useState(false);
+  const { addItemToCart } = useCart();
+  const { user } = useAuth();
 
   const toggleFavorite = () => {
     setIsFavorited(!isFavorited);
+  };
+
+  const handleAddToCart = () => {
+    if (user && product.id) {
+      addItemToCart(product.id, 1);
+    }
   };
 
   if (viewMode === 'list') {
@@ -86,11 +96,12 @@ const ProductCard = ({ product, viewMode }: ProductCardProps) => {
                 
                 <div className="flex space-x-2">
                   <Button 
-                    disabled={product.stock <= 0}
+                    disabled={product.stock <= 0 || !user}
                     className="flex items-center gap-2"
+                    onClick={handleAddToCart}
                   >
                     <ShoppingCart className="h-4 w-4" />
-                    Add to Cart
+                    {!user ? 'Login Required' : product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
                   </Button>
                   <Button variant="outline" size="icon">
                     <MessageSquare className="h-4 w-4" />
@@ -174,10 +185,11 @@ const ProductCard = ({ product, viewMode }: ProductCardProps) => {
         <div className="flex space-x-2 w-full">
           <Button 
             className="flex-1" 
-            disabled={product.stock <= 0}
+            disabled={product.stock <= 0 || !user}
+            onClick={handleAddToCart}
           >
             <ShoppingCart className="h-4 w-4 mr-2" />
-            {product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
+            {!user ? 'Login Required' : product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
           </Button>
           <Button variant="outline" size="icon">
             <MessageSquare className="h-4 w-4" />

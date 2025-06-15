@@ -8,15 +8,25 @@ import { Link } from "react-router-dom";
 import { RatingDisplay } from "@/components/ui/rating";
 import { getProductsByCategory } from "@/lib/firestore";
 import { Product } from "@/types/firestore";
+import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
 import WishlistButton from "@/components/WishlistButton";
 
 const FeaturedProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { addItemToCart } = useCart();
+  const { user } = useAuth();
 
   useEffect(() => {
     loadFeaturedProducts();
   }, []);
+
+  const handleAddToCart = (productId: string) => {
+    if (user) {
+      addItemToCart(productId, 1);
+    }
+  };
 
   const loadFeaturedProducts = async () => {
     try {
@@ -184,10 +194,11 @@ const FeaturedProducts = () => {
                 <div className="flex space-x-2 w-full">
                   <Button 
                     className="flex-1" 
-                    disabled={product.stock <= 0}
+                    disabled={product.stock <= 0 || !user}
+                    onClick={() => handleAddToCart(product.id)}
                   >
                     <ShoppingCart className="h-4 w-4 mr-2" />
-                    {product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
+                    {!user ? 'Login Required' : product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
                   </Button>
                   <Button variant="outline" size="icon">
                     <MessageSquare className="h-4 w-4" />

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RatingDisplay } from "@/components/ui/rating";
 import { Product } from "@/types/firestore";
+import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
 import QuantitySelector from "./QuantitySelector";
 import ShippingInfo from "./ShippingInfo";
 
@@ -15,6 +17,14 @@ interface ProductInfoProps {
 const ProductInfo = ({ product }: ProductInfoProps) => {
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
+  const { addItemToCart } = useCart();
+  const { user } = useAuth();
+
+  const handleAddToCart = () => {
+    if (user && product.id) {
+      addItemToCart(product.id, quantity);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -52,9 +62,13 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
         />
 
         <div className="flex space-x-4">
-          <Button className="flex-1" disabled={product.stock <= 0}>
+          <Button 
+            className="flex-1" 
+            disabled={product.stock <= 0 || !user}
+            onClick={handleAddToCart}
+          >
             <ShoppingCart className="h-4 w-4 mr-2" />
-            {product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
+            {!user ? 'Login to Add to Cart' : product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
           </Button>
           <Button 
             variant="outline" 
