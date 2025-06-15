@@ -1,6 +1,7 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SalesReports from "./SalesReports";
+import VendorStats from "./VendorStats";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
 
 const VendorAnalytics = () => {
@@ -29,13 +30,19 @@ const VendorAnalytics = () => {
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
+      <VendorStats />
+      
+      <Tabs defaultValue="reports" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="reports">Sales Reports</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="sales">Sales</TabsTrigger>
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="customers">Customers</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="reports">
+          <SalesReports />
+        </TabsContent>
 
         <TabsContent value="overview" className="space-y-6">
           {/* Sales Overview */}
