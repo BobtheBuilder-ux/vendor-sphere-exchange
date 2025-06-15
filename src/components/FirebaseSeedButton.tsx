@@ -5,6 +5,8 @@ import { Database, Loader2, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { seedFirebaseWithBatch } from "@/lib/firebaseSeed";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 const FirebaseSeedButton = () => {
   const [isSeeding, setIsSeeding] = useState(false);
@@ -34,6 +36,16 @@ const FirebaseSeedButton = () => {
     setIsSeeding(true);
     
     try {
+      // Wait for auth state to be ready
+      await new Promise((resolve) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (user) {
+            unsubscribe();
+            resolve(user);
+          }
+        });
+      });
+
       const result = await seedFirebaseWithBatch();
       
       if (result.success) {

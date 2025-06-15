@@ -1,12 +1,20 @@
 
 import { writeBatch, doc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { mockCategories, mockVendors, generateMoreProducts } from "@/lib/mockData";
 
 export const seedFirebaseWithBatch = async () => {
   console.log("Starting Firebase batch seeding...");
   
   try {
+    // Ensure user is authenticated
+    if (!auth.currentUser) {
+      console.error("No authenticated user found");
+      throw new Error("User must be authenticated to seed data");
+    }
+
+    console.log("Authenticated user:", auth.currentUser.email);
+    
     const batch = writeBatch(db);
     let operationCount = 0;
     
