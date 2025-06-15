@@ -3,14 +3,14 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, MessageSquare, Heart } from "lucide-react";
+import { ShoppingCart, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RatingDisplay } from "@/components/ui/rating";
 import { getProductsByCategory } from "@/lib/firestore";
 import { Product } from "@/types/firestore";
+import WishlistButton from "@/components/WishlistButton";
 
 const FeaturedProducts = () => {
-  const [favorites, setFavorites] = useState<string[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -95,14 +95,6 @@ const FeaturedProducts = () => {
     }
   };
 
-  const toggleFavorite = (productId: string) => {
-    setFavorites(prev => 
-      prev.includes(productId) 
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
-    );
-  };
-
   if (loading) {
     return (
       <section className="py-16">
@@ -158,16 +150,9 @@ const FeaturedProducts = () => {
                       <Badge variant="destructive">Out of Stock</Badge>
                     </div>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 bg-white/80 hover:bg-white"
-                    onClick={() => toggleFavorite(product.id)}
-                  >
-                    <Heart 
-                      className={`h-4 w-4 ${favorites.includes(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
-                    />
-                  </Button>
+                  <div className="absolute top-2 right-2">
+                    <WishlistButton productId={product.id} />
+                  </div>
                 </div>
                 
                 <div className="space-y-2">
