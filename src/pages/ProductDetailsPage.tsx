@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Star, ShoppingCart, Heart, MessageSquare, Share2, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
@@ -56,8 +55,8 @@ const ProductDetailsPage = () => {
     try {
       await createReview({
         productId: product.id,
-        userId: user.uid,
-        userName: user.displayName || user.email || 'Anonymous',
+        userId: user.id,
+        userName: `${user.firstName} ${user.lastName}` || user.email || 'Anonymous',
         rating: reviewData.rating,
         title: reviewData.title,
         comment: reviewData.comment,
