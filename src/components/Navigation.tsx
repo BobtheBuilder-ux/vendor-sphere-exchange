@@ -1,6 +1,7 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ShoppingCart, MessageSquare, User, Store, LogOut, Filter } from "lucide-react";
+import { Search, ShoppingCart, MessageSquare, User, Store, LogOut, Filter, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,7 @@ const Navigation = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [cartItems] = useState(3); // Mock cart count
+  const [cartItems] = useState(0); // Using 0 since we fixed the cart
   const [unreadMessages] = useState(2); // Mock message count
   const { user, logout } = useAuth();
   const { updateFilters } = useSearch();
@@ -75,6 +76,34 @@ const Navigation = () => {
   const handleLogout = () => {
     logout();
     navigate("/");
+  };
+
+  const getDashboardLink = () => {
+    if (!user) return null;
+    switch (user.userType) {
+      case "admin":
+        return "/admin/dashboard";
+      case "vendor":
+        return "/vendor/dashboard";
+      case "buyer":
+        return "/customer/dashboard";
+      default:
+        return "/customer/dashboard";
+    }
+  };
+
+  const getDashboardLabel = () => {
+    if (!user) return "Dashboard";
+    switch (user.userType) {
+      case "admin":
+        return "Admin Dashboard";
+      case "vendor":
+        return "Vendor Dashboard";
+      case "buyer":
+        return "My Account";
+      default:
+        return "My Account";
+    }
   };
 
   return (
@@ -152,6 +181,16 @@ const Navigation = () => {
 
           {/* Navigation Items - Hidden on mobile */}
           <div className={`flex items-center space-x-4 ${isMobile ? 'hidden' : ''}`}>
+            {/* Dashboard Link - Only show when logged in */}
+            {user && (
+              <Link to={getDashboardLink()!}>
+                <Button variant="ghost" size="sm">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Dashboard
+                </Button>
+              </Link>
+            )}
+
             {/* Messages */}
             <Link to="/messages" className="relative">
               <Button variant="ghost" size="icon">
@@ -192,21 +231,11 @@ const Navigation = () => {
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link to="/profile">My Profile</Link>
+                      <Link to={getDashboardLink()!}>{getDashboardLabel()}</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/orders">My Orders</Link>
+                      <Link to="/wishlist">My Wishlist</Link>
                     </DropdownMenuItem>
-                    {user.userType === "vendor" && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/vendor/dashboard">Vendor Dashboard</Link>
-                      </DropdownMenuItem>
-                    )}
-                    {user.userType === "admin" && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/admin/dashboard">Admin Dashboard</Link>
-                      </DropdownMenuItem>
-                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="h-4 w-4 mr-2" />
@@ -217,9 +246,6 @@ const Navigation = () => {
                   <>
                     <DropdownMenuItem asChild>
                       <Link to="/login">Sign In</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/register">Sign Up</Link>
                     </DropdownMenuItem>
                   </>
                 )}

@@ -9,6 +9,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { SearchProvider } from "@/contexts/SearchContext";
 import Index from "./pages/Index";
 import LoginPage from "./pages/LoginPage";
+import AdminLoginPage from "./pages/AdminLoginPage";
 import VendorRegisterPage from "./pages/VendorRegisterPage";
 import VendorDashboard from "./pages/VendorDashboard";
 import MessagesPage from "./pages/MessagesPage";
@@ -59,6 +60,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/admin/login" element={<AdminLoginPage />} />
                 <Route path="/vendor/register" element={<VendorRegisterPage />} />
                 <Route path="/vendor/dashboard" element={<VendorDashboard />} />
                 <Route path="/messages" element={<MessagesPage />} />
