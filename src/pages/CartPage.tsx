@@ -92,7 +92,7 @@ const CartPage = () => {
                   <div className="flex flex-col sm:flex-row gap-4">
                     <div className="w-full sm:w-24 h-24 bg-gray-100 rounded-lg overflow-hidden">
                       <img 
-                        src={item.product?.imageUrl || "/placeholder.svg"} 
+                        src={item.product?.imageUrl || item.product?.images?.[0] || "/placeholder.svg"} 
                         alt={item.product?.name || "Product"}
                         className="w-full h-full object-cover"
                       />

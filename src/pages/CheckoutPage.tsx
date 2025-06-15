@@ -98,18 +98,17 @@ const CheckoutPage = () => {
           userId: user.id,
           items: cartItems.map(item => ({
             productId: item.productId,
-            vendorId: item.product?.vendorId || "",
-            name: item.product?.name || "",
+            productName: item.product?.name || "",
             price: item.product?.price || 0,
             quantity: item.quantity,
-            total: (item.product?.price || 0) * item.quantity
+            vendorId: item.product?.vendorId || "",
           })),
-          total,
           subtotal,
-          tax,
           shipping,
+          tax,
+          total,
           status: "pending" as const,
-          shippingAddress: {
+          shippingInfo: {
             firstName: formData.get("firstName") as string,
             lastName: formData.get("lastName") as string,
             email: formData.get("email") as string,
@@ -118,11 +117,14 @@ const CheckoutPage = () => {
             apartment: formData.get("apartment") as string,
             city: formData.get("city") as string,
             state: formData.get("state") as string,
-            zipCode: formData.get("zip") as string
+            zipCode: formData.get("zip") as string,
+            shippingMethod: shippingMethod as 'standard' | 'express' | 'overnight'
           },
-          shippingMethod,
-          paymentMethod: "credit_card",
-          paymentStatus: "completed"
+          paymentDetails: {
+            method: "card" as const,
+            transactionId: `tx_${Date.now()}`,
+            paymentStatus: "completed" as const
+          }
         };
 
         const orderId = await createOrder(orderData);
@@ -157,18 +159,17 @@ const CheckoutPage = () => {
         userId: user.id,
         items: cartItems.map(item => ({
           productId: item.productId,
-          vendorId: item.product?.vendorId || "",
-          name: item.product?.name || "",
+          productName: item.product?.name || "",
           price: item.product?.price || 0,
           quantity: item.quantity,
-          total: (item.product?.price || 0) * item.quantity
+          vendorId: item.product?.vendorId || "",
         })),
-        total,
         subtotal,
-        tax,
         shipping,
+        tax,
+        total,
         status: "pending" as const,
-        shippingAddress: {
+        shippingInfo: {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
@@ -177,12 +178,14 @@ const CheckoutPage = () => {
           apartment: "",
           city: "",
           state: "",
-          zipCode: ""
+          zipCode: "",
+          shippingMethod: shippingMethod as 'standard' | 'express' | 'overnight'
         },
-        shippingMethod,
-        paymentMethod: "paypal",
-        paymentStatus: "completed",
-        paypalOrderId
+        paymentDetails: {
+          method: "paypal" as const,
+          transactionId: paypalOrderId,
+          paymentStatus: "completed" as const
+        }
       };
 
       const orderId = await createOrder(orderData);
@@ -416,7 +419,7 @@ const CheckoutPage = () => {
                     <div key={item.id} className="flex items-center space-x-4">
                       <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
                         <img 
-                          src={item.product?.imageUrl || "/placeholder.svg"} 
+                          src={item.product?.imageUrl || item.product?.images?.[0] || "/placeholder.svg"} 
                           alt={item.product?.name || "Product"}
                           className="w-full h-full object-cover"
                         />

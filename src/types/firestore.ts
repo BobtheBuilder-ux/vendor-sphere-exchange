@@ -5,6 +5,7 @@ export interface Product {
   price: number;
   description: string;
   images: string[];
+  imageUrl?: string; // Add optional imageUrl for backward compatibility
   vendorId: string;
   categoryId: string;
   stock: number;
