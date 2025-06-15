@@ -10,6 +10,8 @@ import AdminVendorsTab from "@/components/admin/AdminVendorsTab";
 import AdminUsersTab from "@/components/admin/AdminUsersTab";
 import AdminOrdersTab from "@/components/admin/AdminOrdersTab";
 import AdminAnalyticsTab from "@/components/admin/AdminAnalyticsTab";
+import MockDataButton from "@/components/MockDataButton";
+import FirebaseSeedButton from "@/components/FirebaseSeedButton";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -28,6 +30,15 @@ const AdminDashboard = () => {
             <TrendingUp className="h-4 w-4 mr-2" />
             Generate Report
           </Button>
+        </div>
+
+        {/* Demo Data Section - Admin only */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Platform Management</h2>
+          <div className="space-y-4">
+            <MockDataButton />
+            <FirebaseSeedButton />
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

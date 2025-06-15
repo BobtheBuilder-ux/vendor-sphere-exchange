@@ -1,15 +1,35 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Database, Loader2 } from "lucide-react";
+import { Database, Loader2, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { seedFirebaseWithBatch } from "@/lib/firebaseSeed";
 
 const FirebaseSeedButton = () => {
   const [isSeeding, setIsSeeding] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleSeedFirebase = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to access seeding functionality",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (user.userType !== "admin") {
+      toast({
+        title: "Access Denied",
+        description: "Only admin users can seed Firebase data",
+        variant: "destructive",
+      });
+      return;
+    }
+
     console.log("Starting Firebase batch seed process");
     setIsSeeding(true);
     
@@ -44,6 +64,24 @@ const FirebaseSeedButton = () => {
       setIsSeeding(false);
     }
   };
+
+  if (!user || user.userType !== "admin") {
+    return (
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-6 mb-8">
+        <div className="flex items-center justify-center">
+          <div className="text-center">
+            <Shield className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">
+              Admin Access Required
+            </h3>
+            <p className="text-sm text-gray-500">
+              Firebase seeding is only available to admin users
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 mb-8">
