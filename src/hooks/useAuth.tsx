@@ -77,6 +77,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Check if user already exists
       const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
       
+      // Special handling for admin email
+      const isAdminEmail = firebaseUser.email === "admin@mecwebcraft.com";
+      const finalUserType = isAdminEmail ? "admin" : userType;
+      
       if (!userDoc.exists()) {
         // Create new user with specified role
         const displayName = firebaseUser.displayName || "";
@@ -87,7 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userData = {
           firstName,
           lastName,
-          userType,
+          userType: finalUserType,
           email: firebaseUser.email || "",
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -101,21 +105,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           email: firebaseUser.email || "",
           firstName,
           lastName,
-          userType,
+          userType: finalUserType,
           avatar: firebaseUser.photoURL || undefined,
           ...additionalData
         };
         
         setUser(newUser);
       } else {
-        // User exists, load their data
+        // User exists, load their data but update userType if admin email
         const userData = userDoc.data();
+        const updatedUserType = isAdminEmail ? "admin" : userData.userType || "buyer";
+        
+        // Update userType in Firestore if it's the admin email
+        if (isAdminEmail && userData.userType !== "admin") {
+          await setDoc(doc(db, "users", firebaseUser.uid), {
+            ...userData,
+            userType: "admin",
+            updatedAt: new Date()
+          }, { merge: true });
+        }
+        
         setUser({
           id: firebaseUser.uid,
           email: firebaseUser.email || "",
           firstName: userData.firstName || "",
           lastName: userData.lastName || "",
-          userType: userData.userType || "buyer",
+          userType: updatedUserType,
           avatar: userData.avatar || firebaseUser.photoURL || undefined,
           businessName: userData.businessName,
           businessDescription: userData.businessDescription,

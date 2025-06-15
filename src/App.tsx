@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,7 +9,6 @@ import { SearchProvider } from "@/contexts/SearchContext";
 import Index from "./pages/Index";
 import LoginPage from "./pages/LoginPage";
 import VendorRegisterPage from "./pages/VendorRegisterPage";
-import AdminRegisterPage from "./pages/AdminRegisterPage";
 import VendorDashboard from "./pages/VendorDashboard";
 import MessagesPage from "./pages/MessagesPage";
 import ElectronicsPage from "./pages/ElectronicsPage";
@@ -59,7 +57,6 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/vendor/register" element={<VendorRegisterPage />} />
-                <Route path="/admin/register" element={<AdminRegisterPage />} />
                 <Route path="/vendor/dashboard" element={<VendorDashboard />} />
                 <Route path="/messages" element={<MessagesPage />} />
                 <Route path="/categories/electronics" element={<ElectronicsPage />} />
