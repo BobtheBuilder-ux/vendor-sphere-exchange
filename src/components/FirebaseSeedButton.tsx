@@ -3,18 +3,18 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Database, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { simpleSeedDatabase } from "@/lib/seedData/simpleSeed";
+import { seedFirebaseWithBatch } from "@/lib/firebaseSeed";
 
-const SeedDataButton = () => {
+const FirebaseSeedButton = () => {
   const [isSeeding, setIsSeeding] = useState(false);
   const { toast } = useToast();
 
-  const handleSeedData = async () => {
-    console.log("Starting simple seed process");
+  const handleSeedFirebase = async () => {
+    console.log("Starting Firebase batch seed process");
     setIsSeeding(true);
     
     try {
-      const result = await simpleSeedDatabase();
+      const result = await seedFirebaseWithBatch();
       
       if (result.success) {
         toast({
@@ -29,15 +29,15 @@ const SeedDataButton = () => {
         });
       }
       
-      console.log("Simple seeding completed");
+      console.log("Firebase seeding completed");
     } catch (error) {
-      console.error("Simple seeding failed:", error);
+      console.error("Firebase seeding failed:", error);
       
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       
       toast({
         title: "Error",
-        description: `Failed to seed database: ${errorMessage}`,
+        description: `Failed to seed Firebase: ${errorMessage}`,
         variant: "destructive",
       });
     } finally {
@@ -46,33 +46,34 @@ const SeedDataButton = () => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-8">
+    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 mb-8">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Demo Platform
+            Firebase Demo Platform
           </h3>
           <p className="text-sm text-gray-600 mb-4">
-            Generate sample data to explore our ecommerce platform with products, vendors, and categories
+            Seed Firebase with sample data using batch operations for products, vendors, and categories
           </p>
           <Button
-            onClick={handleSeedData}
+            onClick={handleSeedFirebase}
             disabled={isSeeding}
             variant="default"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
           >
             {isSeeding ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Database className="h-4 w-4" />
             )}
-            {isSeeding ? "Loading Demo Data..." : "Load Demo Data"}
+            {isSeeding ? "Seeding Firebase..." : "Seed Firebase"}
           </Button>
         </div>
         <div className="hidden md:block">
           <div className="text-right text-sm text-gray-500">
-            <div>✨ 50+ Products</div>
-            <div>🏪 5+ Vendors</div>
+            <div>🔥 Firebase Batch</div>
+            <div>✨ 50 Products</div>
+            <div>🏪 5 Vendors</div>
             <div>📦 5 Categories</div>
           </div>
         </div>
@@ -81,4 +82,4 @@ const SeedDataButton = () => {
   );
 };
 
-export default SeedDataButton;
+export default FirebaseSeedButton;

@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { Search, Store, MessageSquare, ShoppingCart, Star, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,7 @@ import FeaturedServices from "@/components/FeaturedServices";
 import TrustIndicators from "@/components/TrustIndicators";
 import PullToRefresh from "@/components/PullToRefresh";
 import MockDataButton from "@/components/MockDataButton";
+import FirebaseSeedButton from "@/components/FirebaseSeedButton";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -41,6 +41,7 @@ const Index = () => {
         {/* Demo Data Section - Visible to all users */}
         <div className="container mx-auto px-4 py-8">
           <MockDataButton />
+          <FirebaseSeedButton />
         </div>
         
         <FeaturedCategories />
