@@ -35,27 +35,14 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      {/* Admin/Vendor Controls */}
-      {user && (user.userType === 'admin' || user.userType === 'vendor') && (
-        <div className="bg-gray-50 border-b">
-          <div className="container mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-gray-900">
-                  Developer Tools
-                </h3>
-                <p className="text-xs text-gray-600">
-                  Generate sample data to populate your ecommerce platform
-                </p>
-              </div>
-              <SeedDataButton />
-            </div>
-          </div>
-        </div>
-      )}
-      
       <PullToRefresh onRefresh={handleRefresh}>
         <HeroSection />
+        
+        {/* Demo Data Section - Visible to all users */}
+        <div className="container mx-auto px-4 py-8">
+          <SeedDataButton />
+        </div>
+        
         <FeaturedCategories />
         <FeaturedProducts />
         <FeaturedServices />

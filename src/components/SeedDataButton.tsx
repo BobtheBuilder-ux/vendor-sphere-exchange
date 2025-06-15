@@ -21,16 +21,6 @@ const SeedDataButton = () => {
       return;
     }
 
-    // Only allow admin or vendor users to seed data
-    if (user.userType !== 'admin' && user.userType !== 'vendor') {
-      toast({
-        title: "Permission Denied",
-        description: "Only admin and vendor users can seed the database",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSeeding(true);
     
     try {
@@ -52,25 +42,39 @@ const SeedDataButton = () => {
     }
   };
 
-  // Only show button for admin and vendor users
-  if (!user || (user.userType !== 'admin' && user.userType !== 'vendor')) {
-    return null;
-  }
-
   return (
-    <Button
-      onClick={handleSeedData}
-      disabled={isSeeding}
-      variant="outline"
-      className="flex items-center gap-2"
-    >
-      {isSeeding ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <Database className="h-4 w-4" />
-      )}
-      {isSeeding ? "Seeding Database..." : "Generate Sample Data"}
-    </Button>
+    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Demo Platform
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Generate sample data to explore our ecommerce platform with 100+ products, vendors, and orders
+          </p>
+          <Button
+            onClick={handleSeedData}
+            disabled={isSeeding}
+            variant="default"
+            className="flex items-center gap-2"
+          >
+            {isSeeding ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Database className="h-4 w-4" />
+            )}
+            {isSeeding ? "Loading Sample Data..." : "Load Demo Data"}
+          </Button>
+        </div>
+        <div className="hidden md:block">
+          <div className="text-right text-sm text-gray-500">
+            <div>✨ 100+ Products</div>
+            <div>🏪 25+ Vendors</div>
+            <div>📦 Sample Orders</div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
