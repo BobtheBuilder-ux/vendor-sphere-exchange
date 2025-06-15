@@ -28,10 +28,16 @@ const queryClient = new QueryClient();
 
 // PayPal configuration
 const paypalOptions = {
-  clientId: "test", // Use sandbox client ID for development
+  clientId: "AZDxjDPsJXkSFMLl5jNH5mmrZoODGJgTyM2Za7I8k9WNOw_6xnvnQiGfJ5lMnXRPCHqeIJsYYSKgBT-S", // Sandbox client ID
   currency: "USD",
   intent: "capture",
   components: "buttons",
+  "data-client-token": undefined,
+  "enable-funding": "venmo,paylater",
+  "disable-funding": "card",
+  "buyer-country": "US",
+  locale: "en_US",
+  debug: true
 };
 
 const App = () => (
