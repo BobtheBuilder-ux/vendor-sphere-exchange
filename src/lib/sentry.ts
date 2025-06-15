@@ -8,14 +8,13 @@ export const initSentry = () => {
     dsn: import.meta.env.VITE_SENTRY_DSN || "", // You'll need to set this in your environment
     environment: import.meta.env.MODE,
     integrations: [
-      Sentry.browserTracingIntegration({
-        routingInstrumentation: Sentry.reactRouterV6BrowserTracingIntegration(
-          useEffect,
-          useLocation,
-          useNavigationType,
-          createRoutesFromChildren,
-          matchRoutes
-        ),
+      Sentry.browserTracingIntegration(),
+      Sentry.reactRouterV6BrowserTracingIntegration({
+        useEffect,
+        useLocation,
+        useNavigationType,
+        createRoutesFromChildren,
+        matchRoutes,
       }),
     ],
     tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
