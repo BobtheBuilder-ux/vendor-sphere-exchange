@@ -8,6 +8,8 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { SearchProvider } from "@/contexts/SearchContext";
 import Index from "./pages/Index";
 import LoginPage from "./pages/LoginPage";
+import VendorRegisterPage from "./pages/VendorRegisterPage";
+import AdminRegisterPage from "./pages/AdminRegisterPage";
 import RegisterPage from "./pages/RegisterPage";
 import VendorDashboard from "./pages/VendorDashboard";
 import MessagesPage from "./pages/MessagesPage";
@@ -56,7 +58,8 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/vendor/register" element={<VendorRegisterPage />} />
+                <Route path="/admin/register" element={<AdminRegisterPage />} />
                 <Route path="/vendor/dashboard" element={<VendorDashboard />} />
                 <Route path="/messages" element={<MessagesPage />} />
                 <Route path="/categories/electronics" element={<ElectronicsPage />} />

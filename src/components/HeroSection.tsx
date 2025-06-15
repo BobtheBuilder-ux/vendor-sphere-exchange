@@ -24,7 +24,7 @@ const HeroSection = () => {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-800">
                 <Shield className="inline h-4 w-4 mr-2" />
-                Secure authentication powered by Google Sign-In. No passwords to remember!
+                Secure Google Sign-In only. Choose your role: Buyer, Vendor, or Admin!
               </p>
             </div>
             
@@ -36,8 +36,8 @@ const HeroSection = () => {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8" asChild>
-                <Link to="/register">
-                  Join as Vendor
+                <Link to="/login">
+                  Sign In with Google
                 </Link>
               </Button>
             </div>

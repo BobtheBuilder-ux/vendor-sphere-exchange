@@ -1,8 +1,8 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
+  signInWithPopup,
+  GoogleAuthProvider,
   signOut, 
   onAuthStateChanged,
   updateProfile,
@@ -19,13 +19,15 @@ interface User {
   lastName: string;
   userType: "buyer" | "vendor" | "admin";
   avatar?: string;
+  businessName?: string;
+  businessDescription?: string;
+  contactPhone?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (userData: any) => Promise<void>;
+  signInWithGoogle: (userType?: "buyer" | "vendor" | "admin", additionalData?: any) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
 }
@@ -50,7 +52,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             firstName: userData.firstName || "",
             lastName: userData.lastName || "",
             userType: userData.userType || "buyer",
-            avatar: userData.avatar || firebaseUser.photoURL || undefined
+            avatar: userData.avatar || firebaseUser.photoURL || undefined,
+            businessName: userData.businessName,
+            businessDescription: userData.businessDescription,
+            contactPhone: userData.contactPhone
           });
         }
       } else {
@@ -62,15 +67,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const signInWithGoogle = async (userType: "buyer" | "vendor" | "admin" = "buyer", additionalData?: any) => {
     setIsLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
       const firebaseUser = userCredential.user;
       
-      // Get additional user data from Firestore
+      // Check if user already exists
       const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-      if (userDoc.exists()) {
+      
+      if (!userDoc.exists()) {
+        // Create new user with specified role
+        const displayName = firebaseUser.displayName || "";
+        const nameParts = displayName.split(" ");
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.slice(1).join(" ") || "";
+
+        const userData = {
+          firstName,
+          lastName,
+          userType,
+          email: firebaseUser.email || "",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          ...additionalData
+        };
+
+        await setDoc(doc(db, "users", firebaseUser.uid), userData);
+
+        const newUser: User = {
+          id: firebaseUser.uid,
+          email: firebaseUser.email || "",
+          firstName,
+          lastName,
+          userType,
+          avatar: firebaseUser.photoURL || undefined,
+          ...additionalData
+        };
+        
+        setUser(newUser);
+      } else {
+        // User exists, load their data
         const userData = userDoc.data();
         setUser({
           id: firebaseUser.uid,
@@ -78,68 +116,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           firstName: userData.firstName || "",
           lastName: userData.lastName || "",
           userType: userData.userType || "buyer",
-          avatar: userData.avatar || firebaseUser.photoURL || undefined
+          avatar: userData.avatar || firebaseUser.photoURL || undefined,
+          businessName: userData.businessName,
+          businessDescription: userData.businessDescription,
+          contactPhone: userData.contactPhone
         });
       }
       
       toast({
         title: "Success",
-        description: "Successfully logged in!",
+        description: "Successfully signed in with Google!",
       });
     } catch (error: any) {
-      console.error("Login failed:", error);
+      console.error("Google sign-in failed:", error);
       toast({
         title: "Error",
-        description: error.message || "Login failed",
-        variant: "destructive",
-      });
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const register = async (userData: any) => {
-    setIsLoading(true);
-    try {
-      // Create Firebase user
-      const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
-      const firebaseUser = userCredential.user;
-
-      // Update Firebase profile
-      await updateProfile(firebaseUser, {
-        displayName: `${userData.firstName} ${userData.lastName}`
-      });
-
-      // Save additional user data to Firestore
-      await setDoc(doc(db, "users", firebaseUser.uid), {
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        userType: userData.userType,
-        email: userData.email,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
-
-      const newUser: User = {
-        id: firebaseUser.uid,
-        email: userData.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        userType: userData.userType
-      };
-      
-      setUser(newUser);
-      
-      toast({
-        title: "Success",
-        description: "Account created successfully!",
-      });
-    } catch (error: any) {
-      console.error("Registration failed:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Registration failed",
+        description: error.message || "Google sign-in failed",
         variant: "destructive",
       });
       throw error;
@@ -197,8 +189,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider value={{
       user,
       isLoading,
-      login,
-      register,
+      signInWithGoogle,
       logout,
       updateUser
     }}>
