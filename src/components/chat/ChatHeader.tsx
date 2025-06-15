@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChatConversation } from "@/services/chatService";
+import { ChatConversation } from "@/types/chat";
 import OnlineStatus from "@/components/chat/OnlineStatus";
 
 interface ChatHeaderProps {

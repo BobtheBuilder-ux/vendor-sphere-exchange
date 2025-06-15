@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
-import { chatService, UserStatus } from "@/services/chatService";
+import { chatService } from "@/services/chatService";
+import { UserStatus } from "@/types/chat";
 import { Circle } from "lucide-react";
 
 interface OnlineStatusProps {

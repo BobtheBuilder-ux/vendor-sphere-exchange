@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { MessageSquare } from "lucide-react";
-import { ChatConversation } from "@/services/chatService";
+import { ChatConversation } from "@/types/chat";
 import OnlineStatus from "@/components/chat/OnlineStatus";
 
 interface ChatConversationListProps {

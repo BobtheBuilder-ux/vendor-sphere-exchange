@@ -1,8 +1,7 @@
-
 import { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, Download } from "lucide-react";
-import { ChatMessage } from "@/services/chatService";
+import { ChatMessage } from "@/types/chat";
 
 interface ChatMessageListProps {
   messages: ChatMessage[];

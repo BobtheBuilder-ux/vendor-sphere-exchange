@@ -1,6 +1,6 @@
 
 import { MessageSquare } from "lucide-react";
-import { ChatConversation, ChatMessage } from "@/services/chatService";
+import { ChatConversation, ChatMessage } from "@/types/chat";
 import ChatHeader from "@/components/chat/ChatHeader";
 import ChatMessageList from "@/components/chat/ChatMessageList";
 import ChatInput from "@/components/chat/ChatInput";
