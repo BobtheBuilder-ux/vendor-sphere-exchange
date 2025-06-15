@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +18,9 @@ import {
   RotateCcw
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import ProfileSettings from "@/components/customer/ProfileSettings";
+import PaymentMethods from "@/components/customer/PaymentMethods";
+import AddressManagement from "@/components/customer/AddressManagement";
 import { Link } from "react-router-dom";
 
 const CustomerDashboard = () => {
@@ -248,58 +250,9 @@ const CustomerDashboard = () => {
               </div>
             )}
 
-            {activeTab === "addresses" && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold">Saved Addresses</h2>
-                  <Button>Add New Address</Button>
-                </div>
-                <div className="space-y-4">
-                  {addresses.map((address) => (
-                    <Card key={address.id}>
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="flex items-center space-x-2 mb-2">
-                              <Badge variant={address.isDefault ? "default" : "outline"}>
-                                {address.type}
-                              </Badge>
-                              {address.isDefault && (
-                                <Badge variant="secondary">Default</Badge>
-                              )}
-                            </div>
-                            <p className="font-semibold">{address.name}</p>
-                            <p className="text-gray-600">{address.address}</p>
-                            <p className="text-gray-600">{address.city}</p>
-                          </div>
-                          <div className="flex space-x-2">
-                            <Button variant="outline" size="sm">Edit</Button>
-                            <Button variant="outline" size="sm">Remove</Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
+            {activeTab === "addresses" && <AddressManagement />}
 
-            {activeTab === "payments" && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold">Payment Methods</h2>
-                  <Button>Add New Card</Button>
-                </div>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Saved Payment Methods</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600">No payment methods saved yet.</p>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+            {activeTab === "payments" && <PaymentMethods />}
 
             {activeTab === "messages" && (
               <div className="space-y-6">
@@ -315,19 +268,7 @@ const CustomerDashboard = () => {
               </div>
             )}
 
-            {activeTab === "profile" && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold">Profile Settings</h2>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Personal Information</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600">Profile settings will be implemented here.</p>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+            {activeTab === "profile" && <ProfileSettings />}
           </div>
         </div>
       </div>
