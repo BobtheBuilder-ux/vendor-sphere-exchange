@@ -1,4 +1,3 @@
-
 import { collection, writeBatch, doc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Product, Vendor, Category, Order } from "@/types/firestore";
@@ -105,27 +104,40 @@ export const seedDatabase = async (userId: string) => {
 };
 
 const createCategories = async (): Promise<string[]> => {
+  console.log("Starting category creation...");
+  
   try {
     const batch = writeBatch(db);
     const categoryIds: string[] = [];
     
-    categories.forEach((category) => {
+    categories.forEach((category, index) => {
+      console.log(`Adding category ${index + 1}: ${category.name}`);
+      
       const docRef = doc(collection(db, "categories"));
       categoryIds.push(docRef.id);
       
-      batch.set(docRef, {
-        ...category,
+      const categoryData = {
+        name: category.name,
+        description: category.description,
         isActive: true,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
-      });
+      };
+      
+      batch.set(docRef, categoryData);
     });
     
+    console.log(`Committing batch with ${categoryIds.length} categories...`);
     await batch.commit();
+    console.log("Categories batch committed successfully");
+    
     return categoryIds;
   } catch (error) {
-    console.error("Error creating categories:", error);
-    throw new Error("Failed to create categories");
+    console.error("Detailed error creating categories:", error);
+    if (error instanceof Error) {
+      throw new Error(`Failed to create categories: ${error.message}`);
+    }
+    throw new Error("Failed to create categories: Unknown error");
   }
 };
 
