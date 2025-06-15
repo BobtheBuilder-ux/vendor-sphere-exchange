@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ArrowLeft, CreditCard, Shield, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,12 +8,16 @@ import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
+import PayPalButton from "@/components/PayPalButton";
+import { useToast } from "@/hooks/use-toast";
 
 const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [shippingMethod, setShippingMethod] = useState("standard");
+  const navigate = useNavigate();
+  const { toast } = useToast();
   
   // Mock cart data
   const cartItems = [
@@ -43,8 +46,25 @@ const CheckoutPage = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle order submission
-    console.log("Order submitted");
+    if (paymentMethod === "card") {
+      // Handle credit card payment
+      console.log("Processing credit card payment");
+      handleOrderSuccess("CC_" + Date.now());
+    }
+  };
+
+  const handleOrderSuccess = (orderId: string) => {
+    toast({
+      title: "Order Placed Successfully!",
+      description: `Your order ${orderId} has been confirmed.`,
+    });
+    
+    // Redirect to order confirmation or customer dashboard
+    navigate("/customer/dashboard");
+  };
+
+  const handlePaymentError = (error: any) => {
+    console.error("Payment failed:", error);
   };
 
   return (
@@ -187,6 +207,15 @@ const CheckoutPage = () => {
                         Credit Card
                       </Label>
                     </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="paypal" id="paypal" />
+                      <Label htmlFor="paypal" className="flex items-center">
+                        <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M20.067 8.478c.492-3.164-.786-5.321-3.212-6.464C15.763 1.385 14.72 1 13.44 1H5.607a.75.75 0 0 0-.741.633L2.334 19.59a.45.45 0 0 0 .444.527h3.538l.891-5.64-.028.177a.75.75 0 0 1 .741-.633h1.541c3.033 0 5.406-1.228 6.097-4.781.027-.14.053-.281.074-.423.218-1.465-.001-2.462-.56-3.339" />
+                        </svg>
+                        PayPal
+                      </Label>
+                    </div>
                   </RadioGroup>
                   
                   {paymentMethod === "card" && (
@@ -205,6 +234,16 @@ const CheckoutPage = () => {
                           <Input id="cvv" placeholder="123" required />
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  {paymentMethod === "paypal" && (
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <PayPalButton
+                        total={total}
+                        onSuccess={handleOrderSuccess}
+                        onError={handlePaymentError}
+                      />
                     </div>
                   )}
                   
@@ -282,9 +321,11 @@ const CheckoutPage = () => {
                 </CardContent>
               </Card>
 
-              <Button type="submit" className="w-full" size="lg">
-                Complete Order - ${total.toFixed(2)}
-              </Button>
+              {paymentMethod === "card" && (
+                <Button type="submit" className="w-full" size="lg">
+                  Complete Order - ${total.toFixed(2)}
+                </Button>
+              )}
             </div>
           </div>
         </form>
