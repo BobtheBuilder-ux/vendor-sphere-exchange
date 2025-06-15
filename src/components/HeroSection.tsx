@@ -19,16 +19,25 @@ const HeroSection = () => {
               Shop with confidence, chat directly with sellers, and experience 
               seamless transactions on our secure platform.
             </p>
+            
+            {/* Google Sign-In Note */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800">
+                <Shield className="inline h-4 w-4 mr-2" />
+                Secure authentication powered by Google Sign-In. No passwords to remember!
+              </p>
+            </div>
+            
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="text-lg px-8" asChild>
-                <Link to="/marketplace">
+                <Link to="/search">
                   Start Shopping
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8" asChild>
-                <Link to="/vendor/register">
-                  Become a Vendor
+                <Link to="/register">
+                  Join as Vendor
                 </Link>
               </Button>
             </div>
@@ -45,7 +54,7 @@ const HeroSection = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <Shield className="h-5 w-5 text-primary" />
-                <span className="text-sm text-gray-600">Secure Payments</span>
+                <span className="text-sm text-gray-600">Google Secure Auth</span>
               </div>
             </div>
           </div>
