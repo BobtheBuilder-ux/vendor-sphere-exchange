@@ -28,7 +28,7 @@ const queryClient = new QueryClient();
 
 // PayPal configuration
 const paypalOptions = {
-  "client-id": "test", // Use sandbox client ID for development
+  clientId: "test", // Use sandbox client ID for development
   currency: "USD",
   intent: "capture",
 };
