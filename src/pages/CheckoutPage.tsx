@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, CreditCard, Shield, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,59 +12,205 @@ import { Link, useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import PayPalButton from "@/components/PayPalButton";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useCart } from "@/hooks/useCart";
+import { createOrder } from "@/lib/firestore";
 
 const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [shippingMethod, setShippingMethod] = useState("standard");
+  const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  
-  // Mock cart data
-  const cartItems = [
-    {
-      id: 1,
-      name: "Wireless Bluetooth Headphones",
-      vendor: "TechGear Pro",
-      price: 79.99,
-      quantity: 1,
-      image: "/placeholder.svg"
-    },
-    {
-      id: 2,
-      name: "Premium Cotton T-Shirt",
-      vendor: "StyleCraft Boutique",
-      price: 29.99,
-      quantity: 2,
-      image: "/placeholder.svg"
-    }
-  ];
+  const { user } = useAuth();
+  const { cartItems, getCartTotal, getCartItemCount, clearCart } = useCart();
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    }
+  }, [user, navigate]);
+
+  // Redirect if cart is empty
+  useEffect(() => {
+    if (cartItems.length === 0) {
+      navigate("/cart");
+    }
+  }, [cartItems, navigate]);
+
+  if (!user || cartItems.length === 0) {
+    return null;
+  }
+
+  const subtotal = getCartTotal();
   const shipping = shippingMethod === "express" ? 15.99 : shippingMethod === "overnight" ? 25.99 : 0;
   const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Check inventory before proceeding
+  const checkInventory = () => {
+    for (const item of cartItems) {
+      if (!item.product) {
+        toast({
+          title: "Product Not Found",
+          description: "Some items in your cart are no longer available.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      if (item.product.stock < item.quantity) {
+        toast({
+          title: "Insufficient Stock",
+          description: `${item.product.name} only has ${item.product.stock} items available.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      if (!item.product.isActive) {
+        toast({
+          title: "Product Unavailable",
+          description: `${item.product.name} is no longer available for purchase.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!checkInventory()) {
+      return;
+    }
+
     if (paymentMethod === "card") {
-      // Handle credit card payment
-      console.log("Processing credit card payment");
-      handleOrderSuccess("CC_" + Date.now());
+      setIsProcessing(true);
+      
+      try {
+        // Create order with form data
+        const formData = new FormData(e.target as HTMLFormElement);
+        const orderData = {
+          userId: user.id,
+          items: cartItems.map(item => ({
+            productId: item.productId,
+            vendorId: item.product?.vendorId || "",
+            name: item.product?.name || "",
+            price: item.product?.price || 0,
+            quantity: item.quantity,
+            total: (item.product?.price || 0) * item.quantity
+          })),
+          total,
+          subtotal,
+          tax,
+          shipping,
+          status: "pending" as const,
+          shippingAddress: {
+            firstName: formData.get("firstName") as string,
+            lastName: formData.get("lastName") as string,
+            email: formData.get("email") as string,
+            phone: formData.get("phone") as string,
+            address: formData.get("address") as string,
+            apartment: formData.get("apartment") as string,
+            city: formData.get("city") as string,
+            state: formData.get("state") as string,
+            zipCode: formData.get("zip") as string
+          },
+          shippingMethod,
+          paymentMethod: "credit_card",
+          paymentStatus: "completed"
+        };
+
+        const orderId = await createOrder(orderData);
+        await clearCart();
+        
+        toast({
+          title: "Order Placed Successfully!",
+          description: `Your order ${orderId} has been confirmed.`,
+        });
+        
+        navigate("/customer/dashboard");
+      } catch (error) {
+        console.error("Order creation failed:", error);
+        toast({
+          title: "Order Failed",
+          description: "There was an error processing your order. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsProcessing(false);
+      }
     }
   };
 
-  const handleOrderSuccess = (orderId: string) => {
-    toast({
-      title: "Order Placed Successfully!",
-      description: `Your order ${orderId} has been confirmed.`,
-    });
-    
-    // Redirect to order confirmation or customer dashboard
-    navigate("/customer/dashboard");
+  const handlePayPalSuccess = async (paypalOrderId: string) => {
+    if (!checkInventory()) {
+      return;
+    }
+
+    try {
+      const orderData = {
+        userId: user.id,
+        items: cartItems.map(item => ({
+          productId: item.productId,
+          vendorId: item.product?.vendorId || "",
+          name: item.product?.name || "",
+          price: item.product?.price || 0,
+          quantity: item.quantity,
+          total: (item.product?.price || 0) * item.quantity
+        })),
+        total,
+        subtotal,
+        tax,
+        shipping,
+        status: "pending" as const,
+        shippingAddress: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          phone: "",
+          address: "",
+          apartment: "",
+          city: "",
+          state: "",
+          zipCode: ""
+        },
+        shippingMethod,
+        paymentMethod: "paypal",
+        paymentStatus: "completed",
+        paypalOrderId
+      };
+
+      const orderId = await createOrder(orderData);
+      await clearCart();
+      
+      toast({
+        title: "Order Placed Successfully!",
+        description: `Your order ${orderId} has been confirmed.`,
+      });
+      
+      navigate("/customer/dashboard");
+    } catch (error) {
+      console.error("PayPal order creation failed:", error);
+      toast({
+        title: "Order Failed",
+        description: "There was an error processing your PayPal order.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handlePaymentError = (error: any) => {
     console.error("Payment failed:", error);
+    toast({
+      title: "Payment Failed",
+      description: "There was an issue processing your payment.",
+      variant: "destructive",
+    });
   };
 
   return (
@@ -79,7 +225,9 @@ const CheckoutPage = () => {
           </Link>
         </div>
         
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">
+          Checkout ({getCartItemCount()} items)
+        </h1>
         
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -94,20 +242,20 @@ const CheckoutPage = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" required />
+                      <Input id="firstName" name="firstName" defaultValue={user.firstName} required />
                     </div>
                     <div>
                       <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" required />
+                      <Input id="lastName" name="lastName" defaultValue={user.lastName} required />
                     </div>
                   </div>
                   <div>
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" required />
+                    <Input id="email" name="email" type="email" defaultValue={user.email} required />
                   </div>
                   <div>
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" type="tel" />
+                    <Input id="phone" name="phone" type="tel" />
                   </div>
                 </CardContent>
               </Card>
@@ -120,20 +268,20 @@ const CheckoutPage = () => {
                 <CardContent className="space-y-4">
                   <div>
                     <Label htmlFor="address">Address</Label>
-                    <Input id="address" required />
+                    <Input id="address" name="address" required />
                   </div>
                   <div>
                     <Label htmlFor="apartment">Apartment, suite, etc. (optional)</Label>
-                    <Input id="apartment" />
+                    <Input id="apartment" name="apartment" />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <Label htmlFor="city">City</Label>
-                      <Input id="city" required />
+                      <Input id="city" name="city" required />
                     </div>
                     <div>
                       <Label htmlFor="state">State</Label>
-                      <Select>
+                      <Select name="state">
                         <SelectTrigger>
                           <SelectValue placeholder="Select state" />
                         </SelectTrigger>
@@ -146,7 +294,7 @@ const CheckoutPage = () => {
                     </div>
                     <div>
                       <Label htmlFor="zip">ZIP Code</Label>
-                      <Input id="zip" required />
+                      <Input id="zip" name="zip" required />
                     </div>
                   </div>
                 </CardContent>
@@ -222,16 +370,16 @@ const CheckoutPage = () => {
                     <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
                       <div>
                         <Label htmlFor="cardNumber">Card Number</Label>
-                        <Input id="cardNumber" placeholder="1234 5678 9012 3456" required />
+                        <Input id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" required />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="expiry">Expiry Date</Label>
-                          <Input id="expiry" placeholder="MM/YY" required />
+                          <Input id="expiry" name="expiry" placeholder="MM/YY" required />
                         </div>
                         <div>
                           <Label htmlFor="cvv">CVV</Label>
-                          <Input id="cvv" placeholder="123" required />
+                          <Input id="cvv" name="cvv" placeholder="123" required />
                         </div>
                       </div>
                     </div>
@@ -241,7 +389,7 @@ const CheckoutPage = () => {
                     <div className="p-4 bg-gray-50 rounded-lg">
                       <PayPalButton
                         total={total}
-                        onSuccess={handleOrderSuccess}
+                        onSuccess={handlePayPalSuccess}
                         onError={handlePaymentError}
                       />
                     </div>
@@ -268,17 +416,21 @@ const CheckoutPage = () => {
                     <div key={item.id} className="flex items-center space-x-4">
                       <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
                         <img 
-                          src={item.image} 
-                          alt={item.name}
+                          src={item.product?.imageUrl || "/placeholder.svg"} 
+                          alt={item.product?.name || "Product"}
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-sm">{item.name}</h4>
-                        <p className="text-xs text-gray-600">by {item.vendor}</p>
+                        <h4 className="font-medium text-sm">{item.product?.name || "Product"}</h4>
                         <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
+                        {item.product && item.product.stock < item.quantity && (
+                          <p className="text-xs text-red-600">Insufficient stock!</p>
+                        )}
                       </div>
-                      <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                      <span className="font-medium">
+                        ${((item.product?.price || 0) * item.quantity).toFixed(2)}
+                      </span>
                     </div>
                   ))}
                   
@@ -322,8 +474,13 @@ const CheckoutPage = () => {
               </Card>
 
               {paymentMethod === "card" && (
-                <Button type="submit" className="w-full" size="lg">
-                  Complete Order - ${total.toFixed(2)}
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  size="lg"
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? "Processing..." : `Complete Order - $${total.toFixed(2)}`}
                 </Button>
               )}
             </div>
