@@ -6,14 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { chatService } from "@/services/chatService";
 
 const services = [
   {
     id: 1,
     title: "Professional Web Development",
     provider: "CodeCraft Studios",
+    providerId: "provider_1",
     startingPrice: 500,
     rating: 4.9,
     reviews: 45,
@@ -27,6 +31,7 @@ const services = [
     id: 2,
     title: "Home Cleaning Service",
     provider: "CleanPro Services",
+    providerId: "provider_2",
     startingPrice: 80,
     rating: 4.8,
     reviews: 128,
@@ -40,6 +45,7 @@ const services = [
     id: 3,
     title: "Personal Fitness Training",
     provider: "FitLife Trainers",
+    providerId: "provider_3",
     startingPrice: 60,
     rating: 4.7,
     reviews: 89,
@@ -53,6 +59,7 @@ const services = [
     id: 4,
     title: "Digital Marketing Consultation",
     provider: "Growth Marketing Co",
+    providerId: "provider_4",
     startingPrice: 150,
     rating: 4.9,
     reviews: 67,
@@ -68,6 +75,87 @@ const ServicesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("featured");
   const [category, setCategory] = useState("all");
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleBookNow = (service: typeof services[0]) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to book this service.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+
+    // Simulate booking process
+    toast({
+      title: "Booking Initiated",
+      description: `Starting booking process for ${service.title}. You will be contacted within ${service.responseTime}.`,
+    });
+
+    // Store booking request in localStorage for demo purposes
+    const bookingRequest = {
+      serviceId: service.id,
+      serviceName: service.title,
+      provider: service.provider,
+      userId: user.id,
+      requestedAt: new Date().toISOString(),
+      status: "pending"
+    };
+
+    const existingBookings = JSON.parse(localStorage.getItem("serviceBookings") || "[]");
+    existingBookings.push(bookingRequest);
+    localStorage.setItem("serviceBookings", JSON.stringify(existingBookings));
+  };
+
+  const handleStartChat = async (service: typeof services[0]) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to message service providers.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+
+    try {
+      // Create or find existing conversation with the service provider
+      const conversationId = await chatService.createConversation(
+        [user.id, service.providerId],
+        {
+          [user.id]: `${user.firstName} ${user.lastName}`,
+          [service.providerId]: service.provider
+        }
+      );
+
+      // Send initial message about the service
+      await chatService.sendMessage(
+        conversationId,
+        user.id,
+        `${user.firstName} ${user.lastName}`,
+        `Hi! I'm interested in your service: ${service.title}. Could you provide more information about pricing and availability?`
+      );
+
+      toast({
+        title: "Message Sent",
+        description: `Your message has been sent to ${service.provider}. They typically respond within ${service.responseTime}.`,
+      });
+
+      // Navigate to messages page
+      navigate("/messages");
+    } catch (error) {
+      console.error("Failed to start chat:", error);
+      toast({
+        title: "Error",
+        description: "Failed to start conversation. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -188,11 +276,18 @@ const ServicesPage = () => {
               
               <CardFooter className="p-4 pt-0 space-y-2">
                 <div className="flex space-x-2 w-full">
-                  <Button className="flex-1">
+                  <Button 
+                    className="flex-1"
+                    onClick={() => handleBookNow(service)}
+                  >
                     <Calendar className="h-4 w-4 mr-2" />
                     Book Now
                   </Button>
-                  <Button variant="outline" size="icon">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => handleStartChat(service)}
+                  >
                     <MessageSquare className="h-4 w-4" />
                   </Button>
                 </div>
