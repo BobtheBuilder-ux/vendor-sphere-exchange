@@ -31,6 +31,7 @@ const paypalOptions = {
   clientId: "test", // Use sandbox client ID for development
   currency: "USD",
   intent: "capture",
+  components: "buttons",
 };
 
 const App = () => (
