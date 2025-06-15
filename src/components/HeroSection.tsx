@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Store, Users, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -19,14 +18,6 @@ const HeroSection = () => {
               Shop with confidence, chat directly with sellers, and experience 
               seamless transactions on our secure platform.
             </p>
-            
-            {/* Google Sign-In Note */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-800">
-                <Shield className="inline h-4 w-4 mr-2" />
-                Secure Google Sign-In only. Choose your role: Buyer, Vendor, or Admin!
-              </p>
-            </div>
             
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="text-lg px-8" asChild>
