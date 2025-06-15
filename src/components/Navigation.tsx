@@ -1,10 +1,11 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Search, ShoppingCart, MessageSquare, User, Menu, Store } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Search, ShoppingCart, MessageSquare, User, Menu, Store, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,11 +18,18 @@ const Navigation = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [cartItems] = useState(3); // Mock cart count
   const [unreadMessages] = useState(2); // Mock message count
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     // Navigate to search results
     console.log("Searching for:", searchQuery);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
   };
 
   return (
@@ -85,22 +93,45 @@ const Navigation = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link to="/profile">My Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/orders">My Orders</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/vendor/dashboard">Vendor Dashboard</Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/login">Sign In</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/register">Sign Up</Link>
-                </DropdownMenuItem>
+                {user ? (
+                  <>
+                    <div className="px-3 py-2 text-sm">
+                      <p className="font-medium">{user.firstName} {user.lastName}</p>
+                      <p className="text-muted-foreground">{user.email}</p>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile">My Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/orders">My Orders</Link>
+                    </DropdownMenuItem>
+                    {user.userType === "vendor" && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/vendor/dashboard">Vendor Dashboard</Link>
+                      </DropdownMenuItem>
+                    )}
+                    {user.userType === "admin" && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin/dashboard">Admin Dashboard</Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link to="/login">Sign In</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/register">Sign Up</Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
