@@ -8,10 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
+import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
 
 const products = [
   {
-    id: 1,
+    id: "electronics-1",
     name: "Wireless Bluetooth Headphones",
     vendor: "TechGear Pro",
     price: 79.99,
@@ -23,7 +25,7 @@ const products = [
     inStock: true
   },
   {
-    id: 2,
+    id: "electronics-2",
     name: "Smart Home Security Camera",
     vendor: "SecureHome Tech",
     price: 149.99,
@@ -35,7 +37,7 @@ const products = [
     inStock: true
   },
   {
-    id: 3,
+    id: "electronics-3",
     name: "Gaming Mechanical Keyboard",
     vendor: "GameTech Solutions",
     price: 129.99,
@@ -47,7 +49,7 @@ const products = [
     inStock: true
   },
   {
-    id: 4,
+    id: "electronics-4",
     name: "4K Ultra HD Monitor",
     vendor: "DisplayPro",
     price: 299.99,
@@ -64,14 +66,22 @@ const ElectronicsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("featured");
   const [priceRange, setPriceRange] = useState("all");
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const { addItemToCart } = useCart();
+  const { user } = useAuth();
 
-  const toggleFavorite = (productId: number) => {
+  const toggleFavorite = (productId: string) => {
     setFavorites(prev => 
       prev.includes(productId) 
         ? prev.filter(id => id !== productId)
         : [...prev, productId]
     );
+  };
+
+  const handleAddToCart = (productId: string) => {
+    if (user) {
+      addItemToCart(productId, 1);
+    }
   };
 
   return (
@@ -192,10 +202,11 @@ const ElectronicsPage = () => {
                 <div className="flex space-x-2 w-full">
                   <Button 
                     className="flex-1" 
-                    disabled={!product.inStock}
+                    disabled={!product.inStock || !user}
+                    onClick={() => handleAddToCart(product.id)}
                   >
                     <ShoppingCart className="h-4 w-4 mr-2" />
-                    {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+                    {!user ? 'Login Required' : !product.inStock ? 'Out of Stock' : 'Add to Cart'}
                   </Button>
                   <Button variant="outline" size="icon">
                     <MessageSquare className="h-4 w-4" />
