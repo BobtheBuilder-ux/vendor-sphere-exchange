@@ -102,8 +102,8 @@ export const searchVendors = async (location: string): Promise<Vendor[]> => {
   return vendors;
 };
 
-export const getSearchSuggestions = async (query: string): Promise<string[]> => {
-  if (query.length < 2) return [];
+export const getSearchSuggestions = async (searchQuery: string): Promise<string[]> => {
+  if (searchQuery.length < 2) return [];
 
   const productsRef = collection(db, 'products');
   const q = query(productsRef, where('isActive', '==', true), limit(10));
@@ -113,7 +113,7 @@ export const getSearchSuggestions = async (query: string): Promise<string[]> => 
   
   const suggestions = products
     .filter(product => 
-      product.name.toLowerCase().includes(query.toLowerCase())
+      product.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .map(product => product.name)
     .slice(0, 5);

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Star, ShoppingCart, Heart, MessageSquare, Share2, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,61 +8,106 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navigation from "@/components/Navigation";
+import ReviewForm from "@/components/reviews/ReviewForm";
+import ReviewList from "@/components/reviews/ReviewList";
+import { RatingDisplay } from "@/components/ui/rating";
+import { useAuth } from "@/hooks/useAuth";
+import { createReview } from "@/lib/reviews";
+import { getProduct } from "@/lib/firestore";
+import { Product } from "@/types/firestore";
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
+  const { user } = useAuth();
+  const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Mock product data
-  const product = {
-    id: 1,
-    name: "Wireless Bluetooth Headphones",
-    vendor: "TechGear Pro",
-    price: 79.99,
-    originalPrice: 99.99,
-    rating: 4.8,
-    reviews: 234,
-    images: ["/placeholder.svg", "/placeholder.svg", "/placeholder.svg"],
-    badge: "Best Seller",
-    inStock: true,
-    stockCount: 25,
-    description: "Premium wireless Bluetooth headphones with active noise cancellation, 30-hour battery life, and crystal-clear audio quality. Perfect for music lovers and professionals.",
-    features: [
-      "Active Noise Cancellation",
-      "30-hour battery life",
-      "Quick charge - 15 minutes for 3 hours",
-      "Premium audio drivers",
-      "Comfortable over-ear design",
-      "Built-in microphone"
-    ],
-    specifications: {
-      "Driver Size": "40mm",
-      "Frequency Response": "20Hz - 20kHz",
-      "Impedance": "32Ω",
-      "Battery Life": "30 hours",
-      "Charging Time": "2 hours",
-      "Weight": "250g"
+  useEffect(() => {
+    if (id) {
+      loadProduct();
+    }
+  }, [id]);
+
+  const loadProduct = async () => {
+    if (!id) return;
+    
+    try {
+      const productData = await getProduct(id);
+      setProduct(productData);
+    } catch (error) {
+      console.error('Error loading product:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const reviews = [
-    {
-      id: 1,
-      user: "John D.",
-      rating: 5,
-      date: "2 weeks ago",
-      comment: "Amazing sound quality and comfort. Battery life is exactly as advertised."
-    },
-    {
-      id: 2,
-      user: "Sarah M.",
-      rating: 4,
-      date: "1 month ago",
-      comment: "Great headphones, noise cancellation works very well. Slightly heavy but worth it."
+  const handleReviewSubmit = async (reviewData: {
+    rating: number;
+    title: string;
+    comment: string;
+  }) => {
+    if (!user || !product) return;
+
+    setIsSubmittingReview(true);
+    try {
+      await createReview({
+        productId: product.id,
+        userId: user.uid,
+        userName: user.displayName || user.email || 'Anonymous',
+        rating: reviewData.rating,
+        title: reviewData.title,
+        comment: reviewData.comment,
+        isVerified: true // You might want to check if user actually purchased this product
+      });
+      
+      // Reload product to get updated rating
+      await loadProduct();
+    } catch (error) {
+      console.error('Error submitting review:', error);
+    } finally {
+      setIsSubmittingReview(false);
     }
-  ];
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <div className="animate-pulse space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="aspect-square bg-gray-200 rounded-lg"></div>
+              <div className="space-y-4">
+                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-16 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <Card>
+            <CardContent className="p-8 text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h2>
+              <p className="text-gray-600">The product you're looking for doesn't exist.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -74,58 +119,55 @@ const ProductDetailsPage = () => {
           <div className="space-y-4">
             <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
               <img 
-                src={product.images[selectedImage]} 
+                src={product.imageUrl || product.images?.[selectedImage] || "/placeholder.svg"} 
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              {product.images.map((image, index) => (
-                <button
-                  key={index}
-                  className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 ${
-                    selectedImage === index ? 'border-primary' : 'border-transparent'
-                  }`}
-                  onClick={() => setSelectedImage(index)}
-                >
-                  <img 
-                    src={image} 
-                    alt={`${product.name} ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
+            {product.images && product.images.length > 1 && (
+              <div className="grid grid-cols-3 gap-2">
+                {product.images.map((image, index) => (
+                  <button
+                    key={index}
+                    className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 ${
+                      selectedImage === index ? 'border-primary' : 'border-transparent'
+                    }`}
+                    onClick={() => setSelectedImage(index)}
+                  >
+                    <img 
+                      src={image} 
+                      alt={`${product.name} ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
           <div className="space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <Badge variant="default">{product.badge}</Badge>
                 <Badge variant="outline">In Stock</Badge>
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
-              <p className="text-gray-600 mb-4">by {product.vendor}</p>
               
               <div className="flex items-center space-x-2 mb-4">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className={`h-4 w-4 ${i < Math.floor(product.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
-                    />
-                  ))}
-                </div>
-                <span className="text-sm text-gray-600">({product.reviews} reviews)</span>
+                {product.rating && product.totalReviews ? (
+                  <>
+                    <RatingDisplay rating={product.rating} showValue />
+                    <span className="text-sm text-gray-600">
+                      ({product.totalReviews} review{product.totalReviews !== 1 ? 's' : ''})
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-sm text-gray-500">No reviews yet</span>
+                )}
               </div>
 
               <div className="flex items-center space-x-4 mb-6">
-                <span className="text-3xl font-bold text-gray-900">${product.price}</span>
-                {product.originalPrice && (
-                  <span className="text-xl text-gray-500 line-through">${product.originalPrice}</span>
-                )}
-                <Badge variant="destructive">Save ${(product.originalPrice! - product.price).toFixed(2)}</Badge>
+                <span className="text-3xl font-bold text-gray-900">${product.price.toFixed(2)}</span>
               </div>
             </div>
 
@@ -152,13 +194,13 @@ const ProductDetailsPage = () => {
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-                <span className="text-sm text-gray-500">({product.stockCount} available)</span>
+                <span className="text-sm text-gray-500">({product.stock} available)</span>
               </div>
 
               <div className="flex space-x-4">
-                <Button className="flex-1">
+                <Button className="flex-1" disabled={product.stock <= 0}>
                   <ShoppingCart className="h-4 w-4 mr-2" />
-                  Add to Cart
+                  {product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
                 </Button>
                 <Button 
                   variant="outline" 
@@ -175,21 +217,6 @@ const ProductDetailsPage = () => {
                 </Button>
               </div>
             </div>
-
-            {/* Features */}
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-semibold mb-4">Key Features</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {product.features.map((feature, index) => (
-                    <div key={index} className="flex items-center text-sm text-gray-600">
-                      <div className="w-2 h-2 bg-primary rounded-full mr-2"></div>
-                      {feature}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Shipping Info */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -211,52 +238,36 @@ const ProductDetailsPage = () => {
 
         {/* Product Details Tabs */}
         <div className="mt-16">
-          <Tabs defaultValue="specifications" className="w-full">
+          <Tabs defaultValue="reviews" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="reviews">
+                Reviews ({product.totalReviews || 0})
+              </TabsTrigger>
               <TabsTrigger value="specifications">Specifications</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews ({product.reviews})</TabsTrigger>
               <TabsTrigger value="shipping">Shipping & Returns</TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="reviews" className="mt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2">
+                  <ReviewList productId={product.id} />
+                </div>
+                <div>
+                  <ReviewForm 
+                    productId={product.id}
+                    onSubmit={handleReviewSubmit}
+                    isSubmitting={isSubmittingReview}
+                  />
+                </div>
+              </div>
+            </TabsContent>
             
             <TabsContent value="specifications" className="mt-6">
               <Card>
                 <CardContent className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(product.specifications).map(([key, value]) => (
-                      <div key={key} className="flex justify-between items-center py-2 border-b">
-                        <span className="font-medium">{key}</span>
-                        <span className="text-gray-600">{value}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <p className="text-gray-600">Product specifications will be displayed here.</p>
                 </CardContent>
               </Card>
-            </TabsContent>
-            
-            <TabsContent value="reviews" className="mt-6">
-              <div className="space-y-6">
-                {reviews.map((review) => (
-                  <Card key={review.id}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-4">
-                          <span className="font-medium">{review.user}</span>
-                          <div className="flex items-center">
-                            {[...Array(5)].map((_, i) => (
-                              <Star 
-                                key={i} 
-                                className={`h-3 w-3 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        <span className="text-sm text-gray-500">{review.date}</span>
-                      </div>
-                      <p className="text-gray-600">{review.comment}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
             </TabsContent>
             
             <TabsContent value="shipping" className="mt-6">

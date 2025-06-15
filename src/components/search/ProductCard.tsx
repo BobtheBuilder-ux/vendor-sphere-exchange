@@ -1,10 +1,11 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, ShoppingCart, MessageSquare, Heart } from 'lucide-react';
+import { ShoppingCart, MessageSquare, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { RatingDisplay } from '@/components/ui/rating';
 import { Product } from '@/types/firestore';
 
 interface ProductCardProps {
@@ -46,15 +47,15 @@ const ProductCard = ({ product, viewMode }: ProductCardProps) => {
                   </p>
                   
                   <div className="flex items-center space-x-4">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          className={`h-4 w-4 ${i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
-                        />
-                      ))}
-                      <span className="text-sm text-gray-600 ml-1">(4.0)</span>
-                    </div>
+                    {product.rating && product.totalReviews ? (
+                      <RatingDisplay 
+                        rating={product.rating} 
+                        showValue 
+                        size="sm"
+                      />
+                    ) : (
+                      <span className="text-sm text-gray-400">No reviews yet</span>
+                    )}
                     
                     {product.stock <= 0 && (
                       <Badge variant="destructive">Out of Stock</Badge>
@@ -150,15 +151,15 @@ const ProductCard = ({ product, viewMode }: ProductCardProps) => {
           </p>
           
           <div className="flex items-center space-x-1">
-            <div className="flex items-center">
-              {[...Array(5)].map((_, i) => (
-                <Star 
-                  key={i} 
-                  className={`h-3 w-3 ${i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
-                />
-              ))}
-            </div>
-            <span className="text-sm text-gray-600">(4.0)</span>
+            {product.rating && product.totalReviews ? (
+              <RatingDisplay 
+                rating={product.rating} 
+                showValue 
+                size="sm"
+              />
+            ) : (
+              <span className="text-sm text-gray-400">No reviews yet</span>
+            )}
           </div>
           
           <div className="flex items-center space-x-2">

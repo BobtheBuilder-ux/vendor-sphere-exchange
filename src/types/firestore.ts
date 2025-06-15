@@ -10,6 +10,24 @@ export interface Product {
   categoryId: string;
   stock: number;
   isActive: boolean;
+  rating?: number;
+  totalReviews?: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Review {
+  id: string;
+  productId: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  title: string;
+  comment: string;
+  isVerified: boolean;
+  isModerated: boolean;
+  isApproved: boolean;
+  helpfulCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
