@@ -1,0 +1,111 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection rules
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && resource.data.userType == 'vendor';
+    }
+    
+    // Products collection rules
+    match /products/{productId} {
+      // Anyone can read active products
+      allow read: if resource.data.isActive == true;
+      
+      // Only vendors can create products
+      allow create: if request.auth != null 
+        && request.auth.uid != null
+        && request.resource.data.vendorId != null;
+      
+      // Only the vendor who owns the product can update/delete it
+      allow update, delete: if request.auth != null 
+        && request.auth.uid != null
+        && getVendorUserId(resource.data.vendorId) == request.auth.uid;
+    }
+    
+    // Orders collection rules
+    match /orders/{orderId} {
+      // Users can read their own orders
+      allow read: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+      
+      // Vendors can read orders that contain their products
+      allow read: if request.auth != null 
+        && vendorHasItemsInOrder(request.auth.uid, resource.data.items);
+      
+      // Authenticated users can create orders
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.userId;
+      
+      // Only the order owner can update their order
+      allow update: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+      
+      // Vendors can update order status for their items
+      allow update: if request.auth != null 
+        && vendorHasItemsInOrder(request.auth.uid, resource.data.items)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']);
+    }
+    
+    // Cart items collection rules
+    match /cartItems/{cartItemId} {
+      // Users can only access their own cart items
+      allow read, write: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+      
+      // Users can create cart items for themselves
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Categories collection rules
+    match /categories/{categoryId} {
+      // Anyone can read active categories
+      allow read: if resource.data.isActive == true;
+      
+      // Only admins can create, update, or delete categories
+      allow write: if request.auth != null 
+        && isAdmin(request.auth.uid);
+    }
+    
+    // Vendors collection rules
+    match /vendors/{vendorId} {
+      // Anyone can read active and verified vendors
+      allow read: if resource.data.isActive == true 
+        && resource.data.isVerified == true;
+      
+      // Users can create vendor profiles for themselves
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.userId;
+      
+      // Vendors can update their own profiles
+      allow update: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+      
+      // Only admins can delete vendor profiles or change verification status
+      allow delete: if request.auth != null 
+        && isAdmin(request.auth.uid);
+      
+      allow update: if request.auth != null 
+        && isAdmin(request.auth.uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isActive', 'isVerified', 'updatedAt']);
+    }
+    
+    // Helper functions
+    function isAdmin(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.userType == 'admin';
+    }
+    
+    function getVendorUserId(vendorId) {
+      return get(/databases/$(database)/documents/vendors/$(vendorId)).data.userId;
+    }
+    
+    function vendorHasItemsInOrder(userId, orderItems) {
+      let vendorDoc = get(/databases/$(database)/documents/vendors/$(userId));
+      return vendorDoc != null && 
+        orderItems.hasAny([vendorDoc.id]);
+    }
+  }
+}
