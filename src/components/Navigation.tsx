@@ -1,15 +1,15 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, ShoppingCart, MessageSquare, User, Store, LogOut, Filter, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useClerkAuth";
 import { useSearch } from "@/contexts/SearchContext";
 import { getSearchSuggestions } from "@/lib/search";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileMenu from "@/components/MobileMenu";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,9 +22,9 @@ const Navigation = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [cartItems] = useState(0); // Using 0 since we fixed the cart
-  const [unreadMessages] = useState(2); // Mock message count
-  const { user, logout } = useAuth();
+  const [cartItems] = useState(0);
+  const [unreadMessages] = useState(2);
+  const { user } = useAuth();
   const { updateFilters } = useSearch();
   const navigate = useNavigate();
   const searchRef = useRef<HTMLDivElement>(null);
@@ -71,11 +71,6 @@ const Navigation = () => {
     updateFilters({ query: suggestion });
     navigate('/search');
     setShowSuggestions(false);
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate("/");
   };
 
   const getDashboardLink = () => {
@@ -182,14 +177,16 @@ const Navigation = () => {
           {/* Navigation Items - Hidden on mobile */}
           <div className={`flex items-center space-x-4 ${isMobile ? 'hidden' : ''}`}>
             {/* Dashboard Link - Only show when logged in */}
-            {user && (
-              <Link to={getDashboardLink()!}>
-                <Button variant="ghost" size="sm">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Dashboard
-                </Button>
-              </Link>
-            )}
+            <SignedIn>
+              {user && (
+                <Link to={getDashboardLink()!}>
+                  <Button variant="ghost" size="sm">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Button>
+                </Link>
+              )}
+            </SignedIn>
 
             {/* Messages */}
             <Link to="/messages" className="relative">
@@ -216,41 +213,24 @@ const Navigation = () => {
             </Link>
 
             {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            <SignedOut>
+              <SignInButton fallbackRedirectUrl="/">
                 <Button variant="ghost" size="icon">
                   <User className="h-5 w-5" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                {user ? (
-                  <>
-                    <div className="px-3 py-2 text-sm">
-                      <p className="font-medium">{user.firstName} {user.lastName}</p>
-                      <p className="text-muted-foreground">{user.email}</p>
-                    </div>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link to={getDashboardLink()!}>{getDashboardLabel()}</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/wishlist">My Wishlist</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout}>
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link to="/login">Sign In</Link>
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </SignInButton>
+            </SignedOut>
+
+            <SignedIn>
+              <UserButton 
+                afterSignOutUrl="/"
+                userProfileProps={{
+                  additionalOAuthScopes: {
+                    google: ['email', 'profile']
+                  }
+                }}
+              />
+            </SignedIn>
           </div>
 
           {/* Mobile Cart & Messages Icons */}
