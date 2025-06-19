@@ -74,11 +74,13 @@ export const useAuth = (): AuthContextType => {
         });
         
         // Update public metadata for custom fields
-        await clerkUser.updateUnsafeMetadata({
-          userType: userData.userType,
-          businessName: userData.businessName,
-          businessDescription: userData.businessDescription,
-          contactPhone: userData.contactPhone,
+        await clerkUser.update({
+          publicMetadata: {
+            userType: userData.userType,
+            businessName: userData.businessName,
+            businessDescription: userData.businessDescription,
+            contactPhone: userData.contactPhone,
+          }
         });
         
         toast({
