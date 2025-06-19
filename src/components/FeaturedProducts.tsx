@@ -9,7 +9,7 @@ import { RatingDisplay } from "@/components/ui/rating";
 import { getProductsByCategory } from "@/lib/firestore";
 import { Product } from "@/types/firestore";
 import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useClerkAuth";
 import WishlistButton from "@/components/WishlistButton";
 
 const FeaturedProducts = () => {

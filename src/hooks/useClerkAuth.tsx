@@ -78,14 +78,11 @@ export const useAuth = (): AuthContextType => {
         
         // Update public metadata for custom fields using the correct method
         if (userData.userType || userData.businessName || userData.businessDescription || userData.contactPhone) {
-          await clerkUser.update({
-            publicMetadata: {
-              ...clerkUser.publicMetadata,
-              userType: userData.userType || clerkUser.publicMetadata?.userType,
-              businessName: userData.businessName || clerkUser.publicMetadata?.businessName,
-              businessDescription: userData.businessDescription || clerkUser.publicMetadata?.businessDescription,
-              contactPhone: userData.contactPhone || clerkUser.publicMetadata?.contactPhone,
-            }
+          await clerkUser.updatePublicMetadata({
+            userType: userData.userType || clerkUser.publicMetadata?.userType,
+            businessName: userData.businessName || clerkUser.publicMetadata?.businessName,
+            businessDescription: userData.businessDescription || clerkUser.publicMetadata?.businessDescription,
+            contactPhone: userData.contactPhone || clerkUser.publicMetadata?.contactPhone,
           });
         }
         
