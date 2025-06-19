@@ -14,7 +14,7 @@ import FeaturedServices from "@/components/FeaturedServices";
 import TrustIndicators from "@/components/TrustIndicators";
 import PullToRefresh from "@/components/PullToRefresh";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useClerkAuth";
 
 const Index = () => {
   const { toast } = useToast();
