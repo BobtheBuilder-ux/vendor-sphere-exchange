@@ -68,7 +68,7 @@ export const useAuth = (): AuthContextType => {
   const updateUser = async (userData: Partial<User>) => {
     if (clerkUser) {
       try {
-        // Update basic user fields
+        // Update basic user fields first
         if (userData.firstName || userData.lastName) {
           await clerkUser.update({
             firstName: userData.firstName,
@@ -76,17 +76,21 @@ export const useAuth = (): AuthContextType => {
           });
         }
         
-        // Update public metadata for custom fields using the correct method
+        // Update public metadata for custom fields separately
         if (userData.userType || userData.businessName || userData.businessDescription || userData.contactPhone) {
-          await clerkUser.update({
-            publicMetadata: {
-              ...clerkUser.publicMetadata,
-              userType: userData.userType || clerkUser.publicMetadata?.userType,
-              businessName: userData.businessName || clerkUser.publicMetadata?.businessName,
-              businessDescription: userData.businessDescription || clerkUser.publicMetadata?.businessDescription,
-              contactPhone: userData.contactPhone || clerkUser.publicMetadata?.contactPhone,
-            }
-          });
+          // Use reload to refresh the user object after metadata update
+          await clerkUser.reload();
+          
+          // Note: Public metadata updates in Clerk typically require backend API calls
+          // For now, we'll store in localStorage as a fallback until proper backend integration
+          const metadataUpdate = {
+            userType: userData.userType || clerkUser.publicMetadata?.userType,
+            businessName: userData.businessName || clerkUser.publicMetadata?.businessName,
+            businessDescription: userData.businessDescription || clerkUser.publicMetadata?.businessDescription,
+            contactPhone: userData.contactPhone || clerkUser.publicMetadata?.contactPhone,
+          };
+          
+          localStorage.setItem(`user_metadata_${clerkUser.id}`, JSON.stringify(metadataUpdate));
         }
         
         toast({
