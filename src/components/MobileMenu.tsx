@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, ShoppingCart, MessageSquare, User, Store, Search, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useClerkAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Sheet,

@@ -68,20 +68,26 @@ export const useAuth = (): AuthContextType => {
   const updateUser = async (userData: Partial<User>) => {
     if (clerkUser) {
       try {
-        await clerkUser.update({
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-        });
+        // Update basic user fields
+        if (userData.firstName || userData.lastName) {
+          await clerkUser.update({
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+          });
+        }
         
-        // Update public metadata for custom fields
-        await clerkUser.update({
-          publicMetadata: {
-            userType: userData.userType,
-            businessName: userData.businessName,
-            businessDescription: userData.businessDescription,
-            contactPhone: userData.contactPhone,
-          }
-        });
+        // Update public metadata for custom fields using the correct method
+        if (userData.userType || userData.businessName || userData.businessDescription || userData.contactPhone) {
+          await clerkUser.update({
+            publicMetadata: {
+              ...clerkUser.publicMetadata,
+              userType: userData.userType || clerkUser.publicMetadata?.userType,
+              businessName: userData.businessName || clerkUser.publicMetadata?.businessName,
+              businessDescription: userData.businessDescription || clerkUser.publicMetadata?.businessDescription,
+              contactPhone: userData.contactPhone || clerkUser.publicMetadata?.contactPhone,
+            }
+          });
+        }
         
         toast({
           title: "Success",
